@@ -12,13 +12,13 @@ func main() {
 	symbol := "AAPL"
 
 	// Fetch historical data for the specified stock symbol
-	q, err := quote.NewQuoteFromYahoo(symbol, "2024-04-01", "2024-04-08", quote.Daily, true)
+	q, err := quote.NewQuoteFromYahoo(symbol, "2022-01-01", "2024-04-24", quote.Daily, true)
 	if err != nil {
 		fmt.Println("Error fetching data:", err)
 		return
 	}
 
-	fmt.Print(q.CSV())
+	// fmt.Print(q.CSV())
 	q.WriteCSV("")
 	// v := reflect.ValueOf(q)
 
