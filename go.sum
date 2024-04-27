@@ -1,2 +1,2 @@
-github.com/markcheno/go-quote v0.0.0-20240225224950-d942c652292c h1:2pDdFX61AcQGQx6FswUdrb/+lFdgMA2uoP0YpRct18U=
-github.com/markcheno/go-quote v0.0.0-20240225224950-d942c652292c/go.mod h1:XkWzl73UMsPUypTth1MHbTnSW6ydpD5qHdearJq3eaI=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
