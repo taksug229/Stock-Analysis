@@ -27,7 +27,7 @@ func main() {
 	}
 
 	filename := fmt.Sprintf(
-		"%s-%s-%s-%s.csv",
+		"data/"+"%s-%s-%s-%s.csv",
 		symbol,
 		startDate,
 		endDate,
