@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -114,4 +116,46 @@ func ParseDateString(dt string) time.Time {
 	}
 	t, _ := time.Parse("2006-01-02 15:04", dt+"0000-01-01 00:00"[len(dt):])
 	return t
+}
+
+func FetchData(apiURL string) models.FinancialData {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+	Timeout := os.Getenv("TIMEOUT")
+	Header := os.Getenv("HEADER")
+	var financialData models.FinancialData
+
+	TimeoutInt, err := strconv.Atoi(Timeout)
+	if err != nil {
+		log.Fatal("Error:", err)
+		return financialData
+	}
+	ClientTimeout := time.Duration(TimeoutInt) * time.Second
+	client := &http.Client{
+		Timeout: ClientTimeout,
+	}
+	request, err := http.NewRequest("GET", apiURL, nil)
+	if err != nil {
+		log.Println("Error reading response body:", err)
+		return financialData
+	}
+	request.Header.Set("User-Agent", Header)
+	response, err := client.Do(request)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return financialData
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Println("Error reading response body:", err)
+		return financialData
+	}
+
+	if err := json.Unmarshal(body, &financialData); err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		return financialData
+	}
+	return financialData
 }

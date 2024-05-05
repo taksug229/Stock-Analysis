@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+type Ticker struct {
+	CIK    int    `json:"cik_str"`
+	Ticker string `json:"ticker"`
+	Title  string `json:"title"`
+}
+
 type Quote struct {
 	Symbol string      `json:"symbol"`
 	Date   []time.Time `json:"date"`
@@ -63,4 +69,35 @@ func getPrecision(symbol string) int {
 		precision = 8
 	}
 	return precision
+}
+
+type FinancialData struct {
+	Taxonomy    string `json:"taxonomy"`
+	Tag         string `json:"tag"`
+	Ccp         string `json:"ccp"`
+	Uom         string `json:"uom"`
+	Label       string `json:"label"`
+	Description string `json:"description"`
+	Pts         int64  `json:"pts"`
+	Data        []struct {
+		Accn       string  `json:"accn"`
+		CIK        int     `json:"cik"`
+		EntityName string  `json:"entityName"`
+		Loc        string  `json:"loc"`
+		Start      string  `json:"start"`
+		End        string  `json:"end"`
+		Val        float64 `json:"val"`
+	} `json:"data"`
+}
+
+type CombinedData struct {
+	CY          []int
+	StartDate   []string
+	EndDate     []string
+	Ticker      []string
+	CIK         []int
+	EntityName  []string
+	NetCash     []interface{}
+	PropertyExp []interface{}
+	Outstanding []interface{}
 }
