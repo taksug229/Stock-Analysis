@@ -2,3 +2,5 @@
 *.sql
 data/
 *.DS_Store
+Dockerfile.backend
+venv/
