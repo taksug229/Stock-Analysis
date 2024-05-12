@@ -36,8 +36,8 @@ func main() {
 			uniqueTickers[ticker] = struct{}{}
 		}
 	}
-	fmt.Print(len(uniqueTickers))
-	// var uniqueTickerSlice []string
+	numUniqueTickers := len(uniqueTickers)
+	log.Println("Unique Tickers: ", numUniqueTickers)
 	startDate := os.Getenv("START_DATE")
 	endDate := os.Getenv("END_DATE")
 	intervals := []string{"daily", "weekly", "monthly"}
@@ -55,9 +55,8 @@ func main() {
 				endDate,
 			)
 			q.WriteCSV(saveFileNameStock)
-			// uniqueTickerSlice = append(uniqueTickerSlice, symbol)
 		}
 	}
 
-	fmt.Println("CSV file created successfully!")
+	log.Println("CSV file created successfully!")
 }
