@@ -6,6 +6,7 @@ import (
 	"main/api"
 	"main/utils"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -15,29 +16,48 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	cy := 2022
+	startYearStr := os.Getenv("START_YEAR")
+	endYearStr := os.Getenv("END_YEAR")
+	startYear, err := strconv.Atoi(startYearStr)
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
+	endYear, err := strconv.Atoi(endYearStr)
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
 	tickers := utils.GetTicker("data/company_tickers.json")
-	combinedData := api.GetCYCombinedData(tickers, cy)
-	saveFileNameFinancial := "data/financial_data.csv"
-	utils.SaveCYCombinedData(combinedData, saveFileNameFinancial)
-
-	symbol := "MSFT"
+	uniqueTickers := make(map[string]struct{})
+	for year := startYear; year <= endYear; year++ {
+		combinedData := api.GetCYCombinedData(tickers, year)
+		saveFileNameFinancial := "data/financial_data.csv"
+		utils.SaveCYCombinedData(combinedData, saveFileNameFinancial)
+		for _, ticker := range combinedData.Ticker {
+			uniqueTickers[ticker] = struct{}{}
+		}
+	}
+	fmt.Print(len(uniqueTickers))
+	// var uniqueTickerSlice []string
 	startDate := os.Getenv("START_DATE")
 	endDate := os.Getenv("END_DATE")
-	interval := os.Getenv("INTERVAL")
-	q, err := api.GetQuoteFromYahoo(symbol, startDate, endDate, interval)
-	if err != nil {
-		log.Println("Error fetching data:", err)
-		return
+	intervals := []string{"daily", "weekly", "monthly"}
+	for _, interval := range intervals {
+		for symbol := range uniqueTickers {
+			q, err := api.GetQuoteFromYahoo(symbol, startDate, endDate, interval)
+			if err != nil {
+				log.Println("Error fetching data:", err)
+				return
+			}
+			saveFileNameStock := fmt.Sprintf(
+				"data/"+"stock_price-%s-%s-%s.csv",
+				interval,
+				startDate,
+				endDate,
+			)
+			q.WriteCSV(saveFileNameStock)
+			// uniqueTickerSlice = append(uniqueTickerSlice, symbol)
+		}
 	}
-	filename := fmt.Sprintf(
-		"data/"+"%s-%s-%s-%s.csv",
-		symbol,
-		startDate,
-		endDate,
-		interval,
-	)
-	q.WriteCSV(filename)
+
 	fmt.Println("CSV file created successfully!")
 }

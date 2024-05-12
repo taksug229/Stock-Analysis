@@ -42,14 +42,14 @@ func GetQuoteFromYahoo(symbol, startDate, endDate, period string) (models.Quote,
 	initReq.Header.Set("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11")
 	client.Do(initReq)
 	var interval string
-	if period == "Daily" {
+	if period == "daily" {
 		interval = "1d"
-	} else if period == "Weekly" {
+	} else if period == "weekly" {
 		interval = "1wk"
-	} else if period == "Monthly" {
+	} else if period == "monthly" {
 		interval = "1mo"
 	} else {
-		log.Fatal("period must be either 'Daily', 'Weekly', or 'Monthly'")
+		log.Fatal("period must be either 'daily', 'weekly', or 'monthly'")
 	}
 	url := fmt.Sprintf(
 		"https://query1.finance.yahoo.com/v7/finance/download/%s?period1=%d&period2=%d&interval=%s&events=history&corsDomain=finance.yahoo.com",
