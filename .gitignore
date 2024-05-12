@@ -1,6 +1,7 @@
 *.csv
 *.sql
-data/
+data/*
+!data/company_tickers.json
 *.DS_Store
 Dockerfile.backend
 venv/

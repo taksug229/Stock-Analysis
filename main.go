@@ -14,29 +14,29 @@ import (
 )
 
 func main() {
-	// symbol := "AAPL"
+	symbol := "AAPL"
 	tickers := utils.GetTicker("data/company_tickers.json")
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
-	// startDate := os.Getenv("START_DATE")
-	// endDate := os.Getenv("END_DATE")
-	// interval := os.Getenv("INTERVAL")
-	// q, err := api.GetQuoteFromYahoo(symbol, startDate, endDate, interval)
-	// if err != nil {
-	// 	fmt.Println("Error fetching data:", err)
-	// 	return
-	// }
+	startDate := os.Getenv("START_DATE")
+	endDate := os.Getenv("END_DATE")
+	interval := os.Getenv("INTERVAL")
+	q, err := api.GetQuoteFromYahoo(symbol, startDate, endDate, interval)
+	if err != nil {
+		fmt.Println("Error fetching data:", err)
+		return
+	}
 
-	// filename := fmt.Sprintf(
-	// 	"data/"+"%s-%s-%s-%s.csv",
-	// 	symbol,
-	// 	startDate,
-	// 	endDate,
-	// 	interval,
-	// )
-	// q.WriteCSV(filename)
+	filename := fmt.Sprintf(
+		"data/"+"%s-%s-%s-%s.csv",
+		symbol,
+		startDate,
+		endDate,
+		interval,
+	)
+	q.WriteCSV(filename)
 	cy := 2022
 	netCashData := api.FetchData("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivities/USD/CY2022.json")
 	propertyExpData := api.FetchData("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment/USD/CY2022.json")

@@ -44,16 +44,70 @@ func (q Quote) WriteCSV(filename string) error {
 			filename = "quote.csv"
 		}
 	}
+
+	// Check if the file exists
+	_, file_err := os.Stat(filename)
+	if file_err != nil && !os.IsNotExist(file_err) {
+		return file_err
+	}
+
+	// Open file with append mode, create if not exists
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write header if the file doesn't exist
+	if os.IsNotExist(file_err) {
+		header := "ticker,datetime,open,high,low,close,volume\n"
+		_, err := file.WriteString(header)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Get CSV data
 	csv := q.CSV()
-	return os.WriteFile(filename, []byte(csv), 0644)
+
+	// Write CSV data to file
+	_, err = file.WriteString(csv)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
+
+// func (q Quote) WriteCSV(filename string) error {
+// 	if filename == "" {
+// 		if q.Symbol != "" {
+// 			filename = q.Symbol + ".csv"
+// 		} else {
+// 			filename = "quote.csv"
+// 		}
+// 	}
+// 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer file.Close()
+
+// 	csv := q.CSV()
+// 	_, err = file.WriteString(csv)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
 
 func (q Quote) CSV() string {
 	precision := getPrecision(q.Symbol)
 	var buffer bytes.Buffer
-	buffer.WriteString("datetime,open,high,low,close,volume\n")
+	// buffer.WriteString("ticker,datetime,open,high,low,close,volume\n")
 	for bar := range q.Close {
-		str := fmt.Sprintf("%s,%.*f,%.*f,%.*f,%.*f,%.*f\n", q.Date[bar].Format("2006-01-02 15:04"),
+		str := fmt.Sprintf("%s,%s,%.*f,%.*f,%.*f,%.*f,%.*f\n", q.Symbol, q.Date[bar].Format("2006-01-02 15:04"),
 			precision, q.Open[bar], precision, q.High[bar], precision, q.Low[bar], precision, q.Close[bar], precision, q.Volume[bar])
 		buffer.WriteString(str)
 	}
