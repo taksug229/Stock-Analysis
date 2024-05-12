@@ -99,5 +99,5 @@ type CombinedData struct {
 	EntityName  []string
 	NetCash     []interface{}
 	PropertyExp []interface{}
-	Outstanding []interface{}
+	Shares      []interface{}
 }

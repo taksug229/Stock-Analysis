@@ -57,3 +57,20 @@ func GetCYDates(data models.FinancialData, cik int) (string, string) {
 	}
 	return "", ""
 }
+
+func FormatInterface(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+	switch v := val.(type) {
+	case int:
+		return strconv.Itoa(v)
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	case string:
+		return v
+	// Add cases for other types if needed
+	default:
+		return ""
+	}
+}

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"main/api"
 	"main/models"
 	"main/utils"
+	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -37,13 +40,13 @@ func main() {
 	cy := 2022
 	netCashData := api.FetchData("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivities/USD/CY2022.json")
 	propertyExpData := api.FetchData("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment/USD/CY2022.json")
-	outstandingData := api.FetchData("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfSharesOutstandingBasic/shares/CY2022.json")
+	sharesOutData := api.FetchData("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfSharesOutstandingBasic/shares/CY2022.json")
 	// Combine data
 	var (
 		combinedData models.CombinedData
 		netcash      interface{}
 		propertyexp  interface{}
-		outstanding  interface{}
+		shares       interface{}
 		startdate    string
 		enddate      string
 	)
@@ -54,22 +57,22 @@ func main() {
 		startdate, enddate = utils.GetCYDates(netCashData, cik)
 		netcash = utils.GetFinancialData(netCashData, cik)
 		propertyexp = utils.GetFinancialData(propertyExpData, cik)
-		outstanding = utils.GetFinancialData(outstandingData, cik)
-		var outstandingfloat float64
-		switch v := outstanding.(type) {
+		shares = utils.GetFinancialData(sharesOutData, cik)
+		var sharesfloat float64
+		switch v := shares.(type) {
 		case int:
-			outstandingfloat = float64(v)
+			sharesfloat = float64(v)
 		case float64:
-			outstandingfloat = v
+			sharesfloat = v
 		default:
-			log.Printf("Skipping %s due to oustanding shares issue", data.Ticker)
+			// log.Printf("Skipping %s due to oustanding shares issue", data.Ticker)
 			continue
 		}
-		if outstandingfloat < 1000 {
-			outstandingfloat = outstandingfloat * 1_000_000
+		if sharesfloat < 1000 {
+			sharesfloat = sharesfloat * 1_000_000
 		}
-		if netcash == 0 || propertyexp == 0 || outstanding == 0 {
-			log.Printf("Skipping %s due to no netcash, protertyexp, or outstanding shares.", data.Ticker)
+		if netcash == 0 || propertyexp == 0 || shares == 0 {
+			// log.Printf("Skipping %s due to no netcash, protertyexp, or shares outstanding.", data.Ticker)
 			continue
 		}
 		combinedData.CY = append(combinedData.CY, cy)
@@ -80,53 +83,40 @@ func main() {
 		combinedData.EntityName = append(combinedData.EntityName, data.Title)
 		combinedData.NetCash = append(combinedData.NetCash, netcash)
 		combinedData.PropertyExp = append(combinedData.PropertyExp, propertyexp)
-		combinedData.Outstanding = append(combinedData.Outstanding, outstandingfloat)
+		combinedData.Shares = append(combinedData.Shares, sharesfloat)
 
 		count++ // TODO Remove during final
 		if count >= 5 {
 			break
 		}
 	}
-	fmt.Println(combinedData)
 
-	// // Write to CSV
-	// file, err := os.Create("data/company_data.csv")
-	// if err != nil {
-	// 	fmt.Println("Error creating CSV file:", err)
-	// 	return
-	// }
-	// defer file.Close()
+	// Write to CSV
+	file, err := os.Create("data/company_data.csv")
+	if err != nil {
+		fmt.Println("Error creating CSV file:", err)
+		return
+	}
+	defer file.Close()
 
-	// writer := csv.NewWriter(file)
-	// defer writer.Flush()
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
 
-	// // Write header
-	// writer.Write([]string{"CIK", "EntityName", "NetCash", "PropertyExp", "Outstanding"})
-	// for _, item := range netCashData.Data {
-	// 	fmt.Printf("Accn: %s, Entity Name: %s, Val: %d\n", item.Accn, item.EntityName, item.Val)
-	// }
-	// // Write data
-	// for i := 0; i < len(combinedData.CY); i++ {
-	// 	row := []string{
-	// 		combinedData.CY[i],
-	// 		combinedData.StartDate[i],
-	// 		data.EndDate[i],
-	// 		data.Ticker[i],
-	// 		strconv.Itoa(data.CIK[i]),
-	// 		data.EntityName[i],
-	// 		formatInterface(data.NetCash[i]),
-	// 		formatInterface(data.PropertyExp[i]),
-	// 		formatInterface(data.Outstanding[i]),
-	// 	}
-	// 	writer.Write(row)
-	// writer.Write([]string{
-	// 	fmt.Sprintf("%d", data.CIK),
-	// 	data.EntityName,
-	// 	fmt.Sprintf("%d", data.NetCash),
-	// 	fmt.Sprintf("%d", data.PropertyExp),
-	// 	fmt.Sprintf("%d", data.Outstanding),
-	// })
-	// }
+	writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "NetCash", "PropertyExp", "Shares"})
+	for i := 0; i < len(combinedData.CY); i++ {
+		row := []string{
+			strconv.Itoa(combinedData.CY[i]),
+			combinedData.StartDate[i],
+			combinedData.EndDate[i],
+			combinedData.Ticker[i],
+			strconv.Itoa(combinedData.CIK[i]),
+			combinedData.EntityName[i],
+			utils.FormatInterface(combinedData.NetCash[i]),
+			utils.FormatInterface(combinedData.PropertyExp[i]),
+			utils.FormatInterface(combinedData.Shares[i]),
+		}
+		writer.Write(row)
+	}
 
-	// fmt.Println("CSV file created successfully!")
+	fmt.Println("CSV file created successfully!")
 }
