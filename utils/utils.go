@@ -70,15 +70,18 @@ func FormatInterface(val interface{}) string {
 		return strconv.FormatFloat(v, 'f', -1, 64)
 	case string:
 		return v
-	// Add cases for other types if needed
 	default:
 		return ""
 	}
 }
 
 func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
-	// Write to CSV
-	file, err := os.Create(saveFileName)
+	_, file_err := os.Stat(saveFileName)
+	if file_err != nil && !os.IsNotExist(file_err) {
+		return
+	}
+
+	file, err := os.OpenFile(saveFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println("Error creating CSV file:", err)
 		return
@@ -88,7 +91,9 @@ func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "NetCash", "PropertyExp", "Shares"})
+	if os.IsNotExist(file_err) {
+		writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "NetCash", "PropertyExp", "Shares"})
+	}
 	for i := 0; i < len(combinedData.CY); i++ {
 		row := []string{
 			strconv.Itoa(combinedData.CY[i]),

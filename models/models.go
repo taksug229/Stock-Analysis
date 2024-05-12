@@ -79,29 +79,6 @@ func (q Quote) WriteCSV(filename string) error {
 	return nil
 }
 
-// func (q Quote) WriteCSV(filename string) error {
-// 	if filename == "" {
-// 		if q.Symbol != "" {
-// 			filename = q.Symbol + ".csv"
-// 		} else {
-// 			filename = "quote.csv"
-// 		}
-// 	}
-// 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer file.Close()
-
-// 	csv := q.CSV()
-// 	_, err = file.WriteString(csv)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 func (q Quote) CSV() string {
 	precision := getPrecision(q.Symbol)
 	var buffer bytes.Buffer
