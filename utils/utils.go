@@ -2,26 +2,42 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"main/models"
 	"os"
+	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
-func GetTicker(filepath string) map[string]models.Ticker {
+func GetTicker(filepath string) []models.Ticker {
 	var tickers map[string]models.Ticker
+	var tickers_ordered []models.Ticker
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Println("Error opening JSON file:", err)
-		return tickers
+		return tickers_ordered
 	}
 	defer file.Close()
 	err = json.NewDecoder(file).Decode(&tickers)
 	if err != nil {
-		fmt.Println("Error decoding JSON:", err)
-		return tickers
+		log.Println("Error decoding JSON:", err)
+		return tickers_ordered
 	}
-	return tickers
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+	topnstr := os.Getenv("TOPTICKERS")
+	topn, err := strconv.Atoi(topnstr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for i := 0; i < topn; i++ {
+		s := strconv.Itoa(i)
+		tickers_ordered = append(tickers_ordered, tickers[s])
+	}
+	return tickers_ordered
 }
 
 func GetFinancialData(data models.FinancialData, cik int) interface{} {
