@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"log"
 	"main/models"
@@ -72,5 +73,34 @@ func FormatInterface(val interface{}) string {
 	// Add cases for other types if needed
 	default:
 		return ""
+	}
+}
+
+func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
+	// Write to CSV
+	file, err := os.Create(saveFileName)
+	if err != nil {
+		log.Println("Error creating CSV file:", err)
+		return
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "NetCash", "PropertyExp", "Shares"})
+	for i := 0; i < len(combinedData.CY); i++ {
+		row := []string{
+			strconv.Itoa(combinedData.CY[i]),
+			combinedData.StartDate[i],
+			combinedData.EndDate[i],
+			combinedData.Ticker[i],
+			strconv.Itoa(combinedData.CIK[i]),
+			combinedData.EntityName[i],
+			FormatInterface(combinedData.NetCash[i]),
+			FormatInterface(combinedData.PropertyExp[i]),
+			FormatInterface(combinedData.Shares[i]),
+		}
+		writer.Write(row)
 	}
 }

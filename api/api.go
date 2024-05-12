@@ -14,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"main/models"
+	"main/utils"
 )
 
 func GetQuoteFromYahoo(symbol, startDate, endDate, period string) (models.Quote, error) {
@@ -70,9 +71,6 @@ func GetQuoteFromYahoo(symbol, startDate, endDate, period string) (models.Quote,
 		log.Printf("bad data for symbol '%s'\n", symbol)
 		return models.NewQuote("", 0), err
 	}
-
-	// numrows := len(csvdata) - 1
-	// quote := models.NewQuote(symbol, numrows)
 	var dateList []time.Time
 	var openList []float64
 	var highList []float64
@@ -158,4 +156,62 @@ func FetchData(apiURL string) models.FinancialData {
 		return financialData
 	}
 	return financialData
+}
+
+func GetCYCombinedData(tickers []models.Ticker, cy int) models.CombinedData {
+	netCashUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivities/USD/CY%d.json", cy)
+	propertyExpUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment/USD/CY%d.json", cy)
+	sharesOutUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfSharesOutstandingBasic/shares/CY%d.json", cy)
+	netCashData := FetchData(netCashUrl)
+	propertyExpData := FetchData(propertyExpUrl)
+	sharesOutData := FetchData(sharesOutUrl)
+	var (
+		combinedData models.CombinedData
+		netcash      interface{}
+		propertyexp  interface{}
+		shares       interface{}
+		startdate    string
+		enddate      string
+	)
+	count := 0
+	for _, data := range tickers {
+		cik := data.CIK
+		startdate, enddate = utils.GetCYDates(netCashData, cik)
+		netcash = utils.GetFinancialData(netCashData, cik)
+		propertyexp = utils.GetFinancialData(propertyExpData, cik)
+		shares = utils.GetFinancialData(sharesOutData, cik)
+		var sharesfloat float64
+		switch v := shares.(type) {
+		case int:
+			sharesfloat = float64(v)
+		case float64:
+			sharesfloat = v
+		default:
+			// log.Printf("Skipping %s due to oustanding shares issue", data.Ticker)
+			continue
+		}
+		if sharesfloat < 1000 {
+			sharesfloat = sharesfloat * 1_000_000
+		}
+		if netcash == 0 || propertyexp == 0 || shares == 0 {
+			// log.Printf("Skipping %s due to no netcash, protertyexp, or shares outstanding.", data.Ticker)
+			continue
+		}
+		combinedData.CY = append(combinedData.CY, cy)
+		combinedData.StartDate = append(combinedData.StartDate, startdate)
+		combinedData.EndDate = append(combinedData.EndDate, enddate)
+		combinedData.Ticker = append(combinedData.Ticker, data.Ticker)
+		combinedData.CIK = append(combinedData.CIK, cik)
+		combinedData.EntityName = append(combinedData.EntityName, data.Title)
+		combinedData.NetCash = append(combinedData.NetCash, netcash)
+		combinedData.PropertyExp = append(combinedData.PropertyExp, propertyexp)
+		combinedData.Shares = append(combinedData.Shares, sharesfloat)
+
+		// TODO Remove during final
+		count++
+		if count >= 5 {
+			break
+		}
+	}
+	return combinedData
 }
