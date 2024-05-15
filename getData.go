@@ -7,6 +7,7 @@ import (
 	"main/utils"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -28,20 +29,32 @@ func main() {
 	}
 	tickers := utils.GetTicker("data/company_tickers.json")
 	uniqueTickers := make(map[string]struct{})
+	iterationCounter := 0
+	log.Println("Getting financial data")
 	for year := startYear; year <= endYear; year++ {
-		combinedData := api.GetCYCombinedData(tickers, year)
+		combinedData, err := api.GetCYCombinedData(tickers, year)
+		if err != nil {
+			log.Println("Failed: ", year)
+			continue
+		}
 		saveFileNameFinancial := "data/financial_data.csv"
 		utils.SaveCYCombinedData(combinedData, saveFileNameFinancial)
 		for _, ticker := range combinedData.Ticker {
 			uniqueTickers[ticker] = struct{}{}
+		}
+		log.Println("Success: ", year)
+		iterationCounter++
+		if iterationCounter%10 == 0 {
+			time.Sleep(5 * time.Second)
 		}
 	}
 	numUniqueTickers := len(uniqueTickers)
 	log.Println("Unique Tickers: ", numUniqueTickers)
 	startDate := os.Getenv("START_DATE")
 	endDate := os.Getenv("END_DATE")
-	intervals := []string{"daily", "weekly", "monthly"}
+	intervals := []string{"monthly"} // "daily", "weekly",
 	for _, interval := range intervals {
+		log.Println("Getting stock data for ", interval)
 		for symbol := range uniqueTickers {
 			q, err := api.GetQuoteFromYahoo(symbol, startDate, endDate, interval)
 			if err != nil {

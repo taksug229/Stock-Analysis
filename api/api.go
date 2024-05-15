@@ -116,7 +116,7 @@ func ParseDateString(dt string) time.Time {
 	return t
 }
 
-func FetchData(apiURL string) models.FinancialData {
+func FetchData(apiURL string) (models.FinancialData, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
@@ -128,7 +128,6 @@ func FetchData(apiURL string) models.FinancialData {
 	TimeoutInt, err := strconv.Atoi(Timeout)
 	if err != nil {
 		log.Fatal("Error:", err)
-		return financialData
 	}
 	ClientTimeout := time.Duration(TimeoutInt) * time.Second
 	client := &http.Client{
@@ -137,34 +136,31 @@ func FetchData(apiURL string) models.FinancialData {
 	request, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		log.Println("Error reading response body:", err)
-		return financialData
+		return financialData, err
 	}
 	request.Header.Set("User-Agent", Header)
 	response, err := client.Do(request)
 	if err != nil {
 		fmt.Println("Error sending request:", err)
-		return financialData
+		return financialData, err
 	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println("Error reading response body:", err)
-		return financialData
+		return financialData, err
 	}
 
 	if err := json.Unmarshal(body, &financialData); err != nil {
 		fmt.Println("Error decoding JSON:", err)
-		return financialData
+		return financialData, err
 	}
-	return financialData
+	return financialData, err
 }
 
-func GetCYCombinedData(tickers []models.Ticker, cy int) models.CombinedData {
+func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, error) {
 	netCashUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivities/USD/CY%d.json", cy)
 	propertyExpUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment/USD/CY%d.json", cy)
 	sharesOutUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfSharesOutstandingBasic/shares/CY%d.json", cy)
-	netCashData := FetchData(netCashUrl)
-	propertyExpData := FetchData(propertyExpUrl)
-	sharesOutData := FetchData(sharesOutUrl)
 	var (
 		combinedData models.CombinedData
 		netcash      interface{}
@@ -173,6 +169,19 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) models.CombinedData {
 		startdate    string
 		enddate      string
 	)
+	netCashData, err := FetchData(netCashUrl)
+	if err != nil {
+		return combinedData, err
+	}
+	propertyExpData, err := FetchData(propertyExpUrl)
+	if err != nil {
+		return combinedData, err
+	}
+	sharesOutData, err := FetchData(sharesOutUrl)
+	if err != nil {
+		return combinedData, err
+	}
+
 	count := 0
 	for _, data := range tickers {
 		cik := data.CIK
@@ -213,5 +222,5 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) models.CombinedData {
 			break
 		}
 	}
-	return combinedData
+	return combinedData, nil
 }
