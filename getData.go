@@ -33,6 +33,10 @@ func main() {
 	log.Println("Getting financial data")
 	for year := startYear; year <= endYear; year++ {
 		combinedData, err := api.GetCYCombinedData(tickers, year)
+		iterationCounter++
+		if iterationCounter%10 == 0 {
+			time.Sleep(5 * time.Second)
+		}
 		if err != nil {
 			log.Println("Failed: ", year)
 			continue
@@ -43,10 +47,6 @@ func main() {
 			uniqueTickers[ticker] = struct{}{}
 		}
 		log.Println("Success: ", year)
-		iterationCounter++
-		if iterationCounter%10 == 0 {
-			time.Sleep(5 * time.Second)
-		}
 	}
 	numUniqueTickers := len(uniqueTickers)
 	log.Println("Unique Tickers: ", numUniqueTickers)
