@@ -196,14 +196,12 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		case float64:
 			sharesfloat = v
 		default:
-			// log.Printf("Skipping %s due to oustanding shares issue", data.Ticker)
 			continue
 		}
 		if sharesfloat < 1000 {
 			sharesfloat = sharesfloat * 1_000_000
 		}
 		if netcash == 0 || propertyexp == 0 || shares == 0 {
-			// log.Printf("Skipping %s due to no netcash, protertyexp, or shares outstanding.", data.Ticker)
 			continue
 		}
 		combinedData.CY = append(combinedData.CY, cy)

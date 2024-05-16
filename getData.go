@@ -19,6 +19,7 @@ func main() {
 	}
 	startYearStr := os.Getenv("START_YEAR")
 	endYearStr := os.Getenv("END_YEAR")
+	finDataFile := os.Getenv("FINANCIAL_DATA_FILE")
 	startYear, err := strconv.Atoi(startYearStr)
 	if err != nil {
 		log.Fatal("Error:", err)
@@ -41,8 +42,7 @@ func main() {
 			log.Println("Failed: ", year)
 			continue
 		}
-		saveFileNameFinancial := "data/financial_data.csv"
-		utils.SaveCYCombinedData(combinedData, saveFileNameFinancial)
+		utils.SaveCYCombinedData(combinedData, finDataFile)
 		for _, ticker := range combinedData.Ticker {
 			uniqueTickers[ticker] = struct{}{}
 		}
