@@ -63,11 +63,9 @@ func main() {
 				log.Println("Error fetching data:", err)
 				return
 			}
-			saveFileNameStock := fmt.Sprintf(
-				"data/"+"stock_price-%s-%s-%s.csv",
+			saveFileNameStock = fmt.Sprintf(
+				"data/"+"stock_price_%s.csv",
 				interval,
-				startDate,
-				endDate,
 			)
 			q.WriteCSV(saveFileNameStock)
 		}
