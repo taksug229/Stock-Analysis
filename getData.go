@@ -48,13 +48,15 @@ func main() {
 		}
 		log.Println("Success: ", year)
 	}
+	log.Println("Saved financial data:", finDataFile)
 	numUniqueTickers := len(uniqueTickers)
-	log.Println("Unique Tickers: ", numUniqueTickers)
+	log.Println("Unique Tickers:", numUniqueTickers)
 	startDate := os.Getenv("START_DATE")
 	endDate := os.Getenv("END_DATE")
 	intervals := []string{"monthly"} // "daily", "weekly",
+	var saveFileNameStock string
 	for _, interval := range intervals {
-		log.Println("Getting stock data for ", interval)
+		log.Println("Getting stock data for interval:", interval)
 		for symbol := range uniqueTickers {
 			q, err := api.GetQuoteFromYahoo(symbol, startDate, endDate, interval)
 			if err != nil {
@@ -69,7 +71,7 @@ func main() {
 			)
 			q.WriteCSV(saveFileNameStock)
 		}
+		log.Println("Saved stock data:", saveFileNameStock)
 	}
-
-	log.Println("CSV file created successfully!")
+	log.Println("Completed!")
 }
