@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"main/gcp"
+
 	"github.com/joho/godotenv"
 )
 
@@ -72,5 +74,6 @@ func main() {
 		}
 		log.Println("Saved stock data:", saveFileNameStock)
 	}
+	gcp.UploadToGCSToBigQuery()
 	log.Println("Completed!")
 }

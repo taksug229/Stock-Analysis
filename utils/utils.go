@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"log"
 	"main/models"
 	"os"
@@ -10,6 +11,14 @@ import (
 
 	"github.com/joho/godotenv"
 )
+
+func LoadEnv() error {
+	err := godotenv.Load()
+	if err != nil {
+		return fmt.Errorf("error loading .env file: %v", err)
+	}
+	return nil
+}
 
 func GetTicker(filepath string) []models.Ticker {
 	var tickers map[string]models.Ticker
