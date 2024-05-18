@@ -5,4 +5,4 @@ COPY . ./
 RUN go mod tidy
 RUN chmod +x data_ingest_bg.sh
 
-CMD ["sh", "-c", "go run getData.go && ./data_ingest_bg.sh"]
+CMD ["sh", "-c", "go run getData.go && sh /app/data_ingest_bg.sh"]
