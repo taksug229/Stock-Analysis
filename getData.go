@@ -51,6 +51,7 @@ func main() {
 	log.Println("Saved financial data:", finDataFile)
 	numUniqueTickers := len(uniqueTickers)
 	log.Println("Unique Tickers:", numUniqueTickers)
+	uniqueTickers["VOO"] = struct{}{}
 	startDate := os.Getenv("START_DATE")
 	endDate := os.Getenv("END_DATE")
 	intervals := []string{"monthly"} // "daily", "weekly",
