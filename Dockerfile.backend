@@ -1,26 +1,30 @@
-FROM golang:1.22-alpine
+FROM golang:1.22
 
 # Install dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     bash \
     curl \
-    python3 \
-    py3-crcmod \
-    jq
+    apt-transport-https \
+    ca-certificates \
+    gnupg \
+    software-properties-common \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Google Cloud SDK
-RUN curl -sSL https://sdk.cloud.google.com | bash && \
-    /root/google-cloud-sdk/install.sh
-
-# Install required Google Cloud SDK components
-RUN /root/google-cloud-sdk/bin/gcloud components install gsutil bq --quiet
-
-# Add Google Cloud SDK to PATH
-ENV PATH $PATH:/root/google-cloud-sdk/bin
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+    | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
+    apt-get update && apt-get install -y google-cloud-sdk
 
 WORKDIR /app
+
+# Copy the application files
 COPY . ./
 
+# Ensure the script has executable permissions
 RUN chmod +x data_ingest_bg.sh
 
+# Use a shell to run the Go program and the shell script
 CMD ["sh", "-c", "go run getData.go && bash /app/data_ingest_bg.sh"]
