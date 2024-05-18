@@ -1,8 +1,26 @@
 FROM golang:1.22-alpine
+
+# Install dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    python3 \
+    py3-crcmod \
+    jq
+
+# Install Google Cloud SDK
+RUN curl -sSL https://sdk.cloud.google.com | bash && \
+    /root/google-cloud-sdk/install.sh
+
+# Install required Google Cloud SDK components
+RUN /root/google-cloud-sdk/bin/gcloud components install gsutil bq --quiet
+
+# Add Google Cloud SDK to PATH
+ENV PATH $PATH:/root/google-cloud-sdk/bin
+
 WORKDIR /app
 COPY . ./
 
-RUN go mod tidy
 RUN chmod +x data_ingest_bg.sh
 
-CMD ["sh", "-c", "go run getData.go && sh /app/data_ingest_bg.sh"]
+CMD ["sh", "-c", "go run getData.go && bash /app/data_ingest_bg.sh"]
