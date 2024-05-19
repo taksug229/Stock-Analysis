@@ -1,26 +1,7 @@
 FROM golang:1.22-alpine
-
-# Install Google Cloud SDK (Undo comments in final)
-# RUN apk add --no-cache \
-#     bash \
-#     curl \
-#     python3 \
-#     py3-crcmod \
-#     jq
-# RUN curl -sSL https://sdk.cloud.google.com | bash && \
-#     /root/google-cloud-sdk/install.sh
-# RUN /root/google-cloud-sdk/bin/gcloud components install gsutil bq --quiet
-# ENV PATH $PATH:/root/google-cloud-sdk/bin
-
 WORKDIR /app
-
-# Copy the application files
 COPY . ./
-
-# Ensure the script has executable permissions
-# RUN chmod +x data_ingest_bg.sh
 RUN go mod tidy
-# Use a shell to run the Go program and the shell script
+
 RUN go build -o /main
 CMD [ "/main" ]
-# CMD ["sh", "-c", "go run main.go && bash /app/data_ingest_bg.sh"]

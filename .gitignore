@@ -4,4 +4,3 @@ data/*
 !data/company_tickers.json
 *.DS_Store
 venv/
-Dockerfile.backend_fullversion
