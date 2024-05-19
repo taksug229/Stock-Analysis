@@ -4,13 +4,14 @@ import numpy as np
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
 
-file_path = "data/AAPL-2022-01-01-2024-04-30-Daily.csv"
+file_path = "data/stock_price_monthly.csv"
 
 
 def main():
     df = pd.read_csv(file_path)
     df["datetime"] = pd.to_datetime(df["datetime"])
     TARGET = "close"
+    del df["ticker"]
     X_train = df.query("datetime <= '2023-12-31'").set_index("datetime")
     X_test = df.query("datetime > '2023-12-31'").set_index("datetime")
     y_train = X_train.pop(TARGET)
