@@ -7,7 +7,6 @@ repos:
     -   id: check-yaml
     -   id: check-added-large-files
         exclude: data/company_tickers.json
-        files: ^(?!main$).*$
 -   repo: https://github.com/psf/black
     rev: 23.12.1
     hooks:
