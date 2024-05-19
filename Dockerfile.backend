@@ -21,5 +21,5 @@ COPY . ./
 RUN chmod +x data_ingest_bg.sh
 
 # Use a shell to run the Go program and the shell script
-CMD ["go run getData.go"]
-# CMD ["sh", "-c", "go run getData.go && bash /app/data_ingest_bg.sh"]
+CMD ["go run main.go"]
+# CMD ["sh", "-c", "go run main.go && bash /app/data_ingest_bg.sh"]
