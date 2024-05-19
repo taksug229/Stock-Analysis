@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"log"
 	"main/models"
 	"os"
@@ -12,12 +11,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func LoadEnv() error {
+func LoadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		return fmt.Errorf("error loading .env file: %v", err)
+		log.Fatalf("error loading .env file: %v", err)
 	}
-	return nil
 }
 
 func GetTicker(filepath string) []models.Ticker {
@@ -50,7 +48,7 @@ func GetTicker(filepath string) []models.Ticker {
 	return tickers_ordered
 }
 
-func GetFinancialData(data models.FinancialData, cik int) interface{} {
+func GetFinancialKPIData(data models.FinancialData, cik int) interface{} {
 	for _, d := range data.Data {
 		if d.CIK == cik {
 			return d.Val
