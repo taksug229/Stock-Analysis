@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -79,6 +80,13 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		return combinedData, err
 	}
 
+	utils.LoadEnv()
+	maxTickers := os.Getenv("MAXTICKERS")
+	skipIteration := true
+	maxTickersInt, err := strconv.Atoi(maxTickers)
+	if err != nil {
+		skipIteration = false
+	}
 	count := 0
 	for _, data := range tickers {
 		cik := data.CIK
@@ -86,6 +94,9 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		netcash = utils.GetFinancialKPIData(netCashData, cik)
 		propertyexp = utils.GetFinancialKPIData(propertyExpData, cik)
 		shares = utils.GetFinancialKPIData(sharesOutData, cik)
+		if netcash == 0 || propertyexp == 0 || shares == 0 {
+			continue
+		}
 		var sharesfloat float64
 		switch v := shares.(type) {
 		case int:
@@ -98,9 +109,7 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		if sharesfloat < 1000 {
 			sharesfloat = sharesfloat * 1_000_000
 		}
-		if netcash == 0 || propertyexp == 0 || shares == 0 {
-			continue
-		}
+		sharesfloat = math.Round(sharesfloat)
 		combinedData.CY = append(combinedData.CY, cy)
 		combinedData.StartDate = append(combinedData.StartDate, startdate)
 		combinedData.EndDate = append(combinedData.EndDate, enddate)
@@ -111,9 +120,8 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		combinedData.PropertyExp = append(combinedData.PropertyExp, propertyexp)
 		combinedData.Shares = append(combinedData.Shares, sharesfloat)
 
-		// TODO Remove during final
 		count++
-		if count >= 5 {
+		if skipIteration && count >= maxTickersInt {
 			break
 		}
 	}
@@ -259,7 +267,6 @@ func SaveQuoteFromYahoo(uniqueTickers map[string]struct{}) {
 	utils.LoadEnv()
 	startDate := os.Getenv("START_DATE")
 	endDate := os.Getenv("END_DATE")
-	// intervals := []string{"monthly"}
 	intervals := strings.Split(os.Getenv("INTERVALS"), ",")
 	var saveFileNameStock string
 	for _, interval := range intervals {
