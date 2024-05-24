@@ -25,6 +25,8 @@ func FetchData(apiURL string) (models.FinancialData, error) {
 
 	TimeoutInt, err := strconv.Atoi(Timeout)
 	if err != nil {
+		log.Println("Error:", err)
+		log.Println(apiURL)
 		log.Fatal("Error:", err)
 	}
 	ClientTimeout := time.Duration(TimeoutInt) * time.Second
@@ -34,22 +36,26 @@ func FetchData(apiURL string) (models.FinancialData, error) {
 	request, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		log.Println("Error reading response body:", err)
+		log.Println(apiURL)
 		return financialData, err
 	}
 	request.Header.Set("User-Agent", Header)
 	response, err := client.Do(request)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		log.Println("Error sending request:", err)
+		log.Println(apiURL)
 		return financialData, err
 	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println("Error reading response body:", err)
+		log.Println(apiURL)
 		return financialData, err
 	}
 
 	if err := json.Unmarshal(body, &financialData); err != nil {
-		fmt.Println("Error decoding JSON:", err)
+		log.Println("Error decoding JSON:", err)
+		log.Println(apiURL)
 		return financialData, err
 	}
 	return financialData, err
@@ -59,11 +65,17 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	netCashUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivities/USD/CY%d.json", cy)
 	propertyExpUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment/USD/CY%d.json", cy)
 	sharesOutUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfSharesOutstandingBasic/shares/CY%d.json", cy)
+	curCashUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/CashAndCashEquivalentsAtCarryingValue/USD/CY%dQ4I.json", cy)
+	investUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/AvailableForSaleSecuritiesCurrent/USD/CY%dQ4I.json", cy)
+	securityUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/MarketableSecuritiesCurrent/USD/CY%dQ4I.json", cy)
 	var (
 		combinedData models.CombinedData
 		netcash      interface{}
 		propertyexp  interface{}
 		shares       interface{}
+		cashasset    interface{}
+		invest       interface{}
+		security     interface{}
 		startdate    string
 		enddate      string
 	)
@@ -76,6 +88,18 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		return combinedData, err
 	}
 	sharesOutData, err := FetchData(sharesOutUrl)
+	if err != nil {
+		return combinedData, err
+	}
+	curCashData, err := FetchData(curCashUrl)
+	if err != nil {
+		return combinedData, err
+	}
+	investData, err := FetchData(investUrl)
+	if err != nil && cy <= 2022 {
+		return combinedData, err
+	}
+	securityData, err := FetchData(securityUrl)
 	if err != nil {
 		return combinedData, err
 	}
@@ -94,7 +118,14 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		netcash = utils.GetFinancialKPIData(netCashData, cik)
 		propertyexp = utils.GetFinancialKPIData(propertyExpData, cik)
 		shares = utils.GetFinancialKPIData(sharesOutData, cik)
-		if netcash == 0 || propertyexp == 0 || shares == 0 {
+		cashasset = utils.GetFinancialKPIData(curCashData, cik)
+		if cy <= 2022 {
+			invest = utils.GetFinancialKPIData(investData, cik)
+		} else {
+			invest = 0
+		}
+		security = utils.GetFinancialKPIData(securityData, cik)
+		if netcash == 0 || propertyexp == 0 || shares == 0 || cashasset == 0 || (invest == 0 && security == 0) {
 			continue
 		}
 		var sharesfloat float64
@@ -119,6 +150,9 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		combinedData.NetCash = append(combinedData.NetCash, netcash)
 		combinedData.PropertyExp = append(combinedData.PropertyExp, propertyexp)
 		combinedData.Shares = append(combinedData.Shares, sharesfloat)
+		combinedData.CashAsset = append(combinedData.CashAsset, cashasset)
+		combinedData.Investments = append(combinedData.Investments, invest)
+		combinedData.Securities = append(combinedData.Securities, security)
 
 		count++
 		if skipIteration && count >= maxTickersInt {

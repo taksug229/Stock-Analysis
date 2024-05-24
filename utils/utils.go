@@ -99,7 +99,7 @@ func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
 	defer writer.Flush()
 
 	if os.IsNotExist(file_err) {
-		writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "NetCash", "PropertyExp", "Shares"})
+		writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "NetCash", "PropertyExp", "Shares", "CashAsset", "Investments", "Securities"})
 	}
 	for i := 0; i < len(combinedData.CY); i++ {
 		row := []string{
@@ -112,6 +112,9 @@ func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
 			FormatInterface(combinedData.NetCash[i]),
 			FormatInterface(combinedData.PropertyExp[i]),
 			FormatInterface(combinedData.Shares[i]),
+			FormatInterface(combinedData.CashAsset[i]),
+			FormatInterface(combinedData.Investments[i]),
+			FormatInterface(combinedData.Securities[i]),
 		}
 		writer.Write(row)
 	}

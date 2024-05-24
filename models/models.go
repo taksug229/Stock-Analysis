@@ -131,4 +131,7 @@ type CombinedData struct {
 	NetCash     []interface{}
 	PropertyExp []interface{}
 	Shares      []interface{}
+	CashAsset   []interface{}
+	Investments []interface{}
+	Securities  []interface{}
 }
