@@ -4,13 +4,13 @@ import (
 	"log"
 
 	"main/api"
-	// "main/gcp"
+	"main/gcp"
 )
 
 func main() {
 	uniqueTickers := api.SaveFinancialData()
 	uniqueTickers["VOO"] = struct{}{}
 	api.SaveQuoteFromYahoo(uniqueTickers)
-	// gcp.UploadToGCSToBigQuery()
+	gcp.UploadToGCSToBigQuery()
 	log.Println("Completed!")
 }
