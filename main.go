@@ -12,5 +12,6 @@ func main() {
 	uniqueTickers["VOO"] = struct{}{}
 	api.SaveQuoteFromYahoo(uniqueTickers)
 	gcp.UploadToGCSToBigQuery()
+	gcp.CreateMLTable()
 	log.Println("Completed!")
 }

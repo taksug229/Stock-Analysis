@@ -16,7 +16,7 @@ import (
 )
 
 func CheckEnvVars() {
-	requiredVars := []string{"BUCKET_NAME", "DATASET_NAME", "FINANCIAL_DATA_FILE", "INTERVALS", "START_DATE", "END_DATE"}
+	requiredVars := []string{"BUCKET_NAME", "DATASET_NAME", "STOCK_TABLE_NAME", "ML_TABLE_NAME", "FINANCIAL_DATA_FILE", "INTERVALS", "START_DATE", "END_DATE"}
 	for _, v := range requiredVars {
 		if os.Getenv(v) == "" {
 			log.Fatalf("missing required environment variable: %s", v)
@@ -163,5 +163,64 @@ func UploadToGCSToBigQuery() {
 		gcsURI = fmt.Sprintf("gs://%s/%s", bucketName, stockPriceFile)
 		stockIntervalTableName := fmt.Sprintf("%s_%s", stockTableName, interval)
 		LoadCSVIntoBigQuery(ctx, bigqueryClient, datasetName, stockIntervalTableName, gcsURI)
+	}
+}
+
+func CreateMLTable() {
+	utils.LoadEnv()
+	CheckEnvVars()
+
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	mltable := os.Getenv("ML_TABLE_NAME")
+	sqlFile := "sql/create_ml_table.sql"
+	sqlBytes, err := os.ReadFile(sqlFile)
+	if err != nil {
+		log.Fatalf("Error reading SQL file: %v", err)
+	}
+	sql := string(sqlBytes)
+
+	sql = ReplacePlaceholders(sql)
+	ExecuteBigQuerySQL(project, sql)
+	log.Printf("Table created successfully: %v", mltable)
+}
+
+func ReplacePlaceholders(sql string) string {
+	sql = ReplacePlaceholder(sql, "GOOGLE_CLOUD_PROJECT", os.Getenv("GOOGLE_CLOUD_PROJECT"))
+	sql = ReplacePlaceholder(sql, "DATASET_NAME", os.Getenv("DATASET_NAME"))
+	sql = ReplacePlaceholder(sql, "ML_TABLE_NAME", os.Getenv("ML_TABLE_NAME"))
+	sql = ReplacePlaceholder(sql, "FINANICIAL_TABLE_NAME", os.Getenv("FINANICIAL_TABLE_NAME"))
+	sql = ReplacePlaceholder(sql, "STOCK_TABLE_NAME", os.Getenv("STOCK_TABLE_NAME"))
+	return sql
+}
+
+func ReplacePlaceholder(sql, placeholder, value string) string {
+	return strings.ReplaceAll(sql, fmt.Sprintf("${%s}", placeholder), value)
+}
+
+func ExecuteBigQuerySQL(projectID, sql string) {
+	ctx := context.Background()
+	client, err := bigquery.NewClient(ctx, projectID)
+	if err != nil {
+		log.Printf("bigquery.NewClient: %v\n", err)
+		log.Fatal()
+	}
+	defer client.Close()
+
+	query := client.Query(sql)
+	job, err := query.Run(ctx)
+	if err != nil {
+		log.Printf("query.Run: %v\n", err)
+		log.Fatal()
+	}
+
+	status, err := job.Wait(ctx)
+	if err != nil {
+		log.Printf("job.Wait: %v\n", err)
+		log.Fatal()
+	}
+
+	if err := status.Err(); err != nil {
+		log.Printf("job completed with error: %v\n", err)
+		log.Fatal()
 	}
 }
