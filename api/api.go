@@ -106,55 +106,18 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	time.Sleep(time.Second)
 
 	curCashDataQ4, _ := FetchData(curCashQ4Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 	curCashDataQ3, _ := FetchData(curCashQ3Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 	curCashDataQ2, _ := FetchData(curCashQ2Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 	curCashDataQ1, _ := FetchData(curCashQ1Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 	investDataQ4, _ := FetchData(investQ4Url)
-	// if err != nil && cy <= 2022 {
-	// 	return combinedData, err
-	// }
 	investDataQ3, _ := FetchData(investQ3Url)
-	// if err != nil && cy <= 2022 {
-	// 	return combinedData, err
-	// }
 	time.Sleep(time.Second)
-
 	investDataQ2, _ := FetchData(investQ2Url)
-	// if err != nil && cy <= 2022 {
-	// 	return combinedData, err
-	// }
 	investDataQ1, _ := FetchData(investQ1Url)
-	// if err != nil && cy <= 2022 {
-	// 	return combinedData, err
-	// }
 	securityDataQ4, _ := FetchData(securityQ4Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 	securityDataQ3, _ := FetchData(securityQ3Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 	securityDataQ2, _ := FetchData(securityQ2Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 	securityDataQ1, _ := FetchData(securityQ1Url)
-	// if err != nil {
-	// 	return combinedData, err
-	// }
 
 	curCashSlice := []models.FinancialData{curCashDataQ4, curCashDataQ3, curCashDataQ2, curCashDataQ1}
 	investSlice := []models.FinancialData{investDataQ4, investDataQ3, investDataQ2, investDataQ1}
@@ -174,9 +137,9 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		netcash = utils.GetFinancialKPIData(netCashData, cik)
 		propertyexp = utils.GetFinancialKPIData(propertyExpData, cik)
 		shares = utils.GetFinancialKPIData(sharesOutData, cik)
-		if netcash == 0 || propertyexp == 0 || shares == 0 {
-			continue
-		}
+		// if netcash == 0 || propertyexp == 0 || shares == 0 {
+		// 	continue
+		// }
 		cashasset = getAssetFromQuarters(curCashSlice, cik)
 		if cy <= 2022 {
 			invest = getAssetFromQuarters(investSlice, cik)
@@ -228,7 +191,6 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 }
 
 func getAssetFromQuarters(assetSlice []models.FinancialData, cik int) float64 {
-	// var assetfloat float64
 	assetfloat := 0.0
 	for _, assetData := range assetSlice {
 		asset := utils.GetFinancialKPIData(assetData, cik)
