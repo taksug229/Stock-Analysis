@@ -8,17 +8,49 @@ services:
     container_name: backend
     volumes:
       - backend_data:/app/data
+    ports:
+      - "8080:8080"
+    networks:
+      - monitoring
 
-  mlmodel:
-    build:
-      context: .
-      dockerfile: Dockerfile.mlmodel
-    container_name: mlmodel
-    depends_on:
-      backend:
-        condition: service_completed_successfully
+  # mlmodel:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.mlmodel
+  #   container_name: mlmodel
+  #   depends_on:
+  #     backend:
+  #       condition: service_completed_successfully
+  #   volumes:
+  #     - backend_data:/app/data
+  #   networks:
+  #     - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
     volumes:
-      - backend_data:/app/data
+      - prometheus-data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
 
 volumes:
   backend_data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  monitoring:

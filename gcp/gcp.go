@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -223,4 +224,52 @@ func ExecuteBigQuerySQL(projectID, sql string) {
 		log.Printf("job completed with error: %v\n", err)
 		log.Fatal()
 	}
+}
+
+func PrintQueryResults(sqlFile string, w io.Writer) error {
+	utils.LoadEnv()
+	CheckEnvVars()
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	ctx := context.Background()
+	client, err := bigquery.NewClient(ctx, project)
+	if err != nil {
+		return fmt.Errorf("bigquery.NewClient: %v", err)
+	}
+	defer client.Close()
+
+	sqlBytes, err := os.ReadFile(sqlFile)
+	if err != nil {
+		log.Fatalf("Error reading SQL file: %v", err)
+	}
+	sql := string(sqlBytes)
+
+	sql = ReplacePlaceholders(sql)
+	q := client.Query(sql)
+	// Location must match that of the dataset(s) referenced in the query.
+	q.Location = "US"
+	// Run the query and print results when the query job is completed.
+	job, err := q.Run(ctx)
+	if err != nil {
+		return err
+	}
+	status, err := job.Wait(ctx)
+	if err != nil {
+		return err
+	}
+	if err := status.Err(); err != nil {
+		return err
+	}
+	it, err := job.Read(ctx)
+	for {
+		var row []bigquery.Value
+		err = it.Next(&row)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(w, row)
+	}
+	return nil
 }
