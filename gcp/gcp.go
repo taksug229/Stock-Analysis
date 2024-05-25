@@ -259,7 +259,7 @@ func PrintQueryResults(sqlFile string, w io.Writer) error {
 	if err := status.Err(); err != nil {
 		return err
 	}
-	it, err := job.Read(ctx)
+	it, _ := job.Read(ctx)
 	for {
 		var row []bigquery.Value
 		err = it.Next(&row)
