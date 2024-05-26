@@ -59,7 +59,6 @@ WITH tfcf AS
 (
     SELECT  datetime,
             EXTRACT( YEAR FROM datetime ) AS yr,
-            EXTRACT( MONTH FROM datetime ) AS mn,
             ticker,
             CLOSE AS stockprice
     FROM `${DATASET_NAME}.${STOCK_TABLE_NAME}_monthly`
@@ -76,7 +75,7 @@ WITH tfcf AS
     FROM sp AS a
     INNER JOIN sp AS b
     ON a.ticker = b.ticker AND a.yr = b.yr + 5
-    INNER JOIN sp AS c
+    LEFT JOIN sp AS c
     ON a.ticker = c.ticker AND a.yr = c.yr - 1
 ), volumes AS
 (
@@ -84,7 +83,7 @@ WITH tfcf AS
             EXTRACT( YEAR FROM datetime ) + 1 AS yr,
             SUM(volume) AS volume
     FROM `${DATASET_NAME}.${STOCK_TABLE_NAME}_monthly`
-    WHERE datetime BETWEEN "2009-01-01" AND "2024-01-01"
+    WHERE datetime BETWEEN "2009-01-01" AND "2023-12-01"
     GROUP BY  ticker,
               yr
 ), con AS
