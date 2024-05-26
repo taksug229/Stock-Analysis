@@ -10,6 +10,8 @@ import (
 	// "main/api"
 	// "main/gcp"
 	"main/router"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -26,6 +28,7 @@ func main() {
 	// 	fmt.Fprintf(w, "/resources/values: %s", mux.Vars(r)["id"])
 	// })
 	r := router.NewRouter()
+	r.Handle("/metrics", promhttp.Handler())
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         ":8080",
