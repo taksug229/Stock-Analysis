@@ -11,19 +11,6 @@ services:
     networks:
       - monitoring
 
-  # mlmodel:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.mlmodel
-  #   container_name: mlmodel
-  #   depends_on:
-  #     backend:
-  #       condition: service_completed_successfully
-  #   volumes:
-  #     - backend_data:/app/data
-  #   networks:
-  #     - monitoring
-
   prometheus:
     image: prom/prometheus
     container_name: prometheus
