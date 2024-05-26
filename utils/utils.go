@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"main/models"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -118,4 +119,20 @@ func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
 		}
 		writer.Write(row)
 	}
+}
+
+// AuthMiddleware checks for authentication
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Authentication logic
+		next.ServeHTTP(w, r)
+	})
+}
+
+// LoggingMiddleware logs each request
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+		next.ServeHTTP(w, r)
+	})
 }
