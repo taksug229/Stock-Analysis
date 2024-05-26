@@ -6,7 +6,7 @@ repos:
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
-        exclude: data/company_tickers.json
+        exclude: backend/data/company_tickers.json
 -   repo: https://github.com/psf/black
     rev: 23.12.1
     hooks:

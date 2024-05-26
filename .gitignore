@@ -2,7 +2,7 @@
 *.sql
 !sql/create_ml_table.sql
 !sql/get_good_stocks.sql
-data/*
-!data/company_tickers.json
+backend/data/*
+!backend/data/company_tickers.json
 *.DS_Store
 venv/

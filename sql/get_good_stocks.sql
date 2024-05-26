@@ -1,5 +1,0 @@
-SELECT DISTINCT ticker
-FROM `${DATASET_NAME}.${ML_TABLE_NAME}`
-WHERE mrkt_intrinsic_ratio BETWEEN 0 AND 0.7
-AND date = "2023-01-01"
-ORDER BY ticker
