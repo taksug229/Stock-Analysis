@@ -1,7 +1,7 @@
 *.csv
 *.sql
-!sql/create_ml_table.sql
-!sql/get_good_stocks.sql
+!backend/sql/*
+
 backend/data/*
 !backend/data/company_tickers.json
 *.DS_Store

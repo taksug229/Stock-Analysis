@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"main/gcp"
+	"main/backend/gcp"
 )
 
 func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
 	// paramStr := strings.Split(r.URL.Path, "/")
-	sqlFile := "sql/get_good_stocks.sql"
+	sqlFile := "backend/sql/get_good_stocks.sql"
 	err := gcp.PrintQueryResults(sqlFile, w)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)

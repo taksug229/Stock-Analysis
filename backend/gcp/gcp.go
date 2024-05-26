@@ -13,7 +13,7 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
-	"main/utils"
+	"main/backend/utils"
 )
 
 func CheckEnvVars() {

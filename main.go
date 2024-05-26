@@ -7,9 +7,9 @@ import (
 
 	// "time"
 
-	// "main/api"
-	// "main/gcp"
-	"main/router"
+	// "main/backend/api"
+	// "main/backend/gcp"
+	"main/backend/router"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

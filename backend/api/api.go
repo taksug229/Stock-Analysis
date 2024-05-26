@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"main/models"
-	"main/utils"
+	"main/backend/models"
+	"main/backend/utils"
 )
 
 func FetchData(apiURL string) (models.FinancialData, error) {
@@ -222,7 +222,7 @@ func SaveFinancialData() map[string]struct{} {
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
-	tickers := utils.GetTicker("data/company_tickers.json")
+	tickers := utils.GetTicker("backend/data/company_tickers.json")
 	uniqueTickers := make(map[string]struct{})
 	iterationCounter := 0
 	log.Println("Getting financial data")
@@ -361,7 +361,7 @@ func SaveQuoteFromYahoo(uniqueTickers map[string]struct{}) {
 				return
 			}
 			saveFileNameStock = fmt.Sprintf(
-				"data/"+"stock_price_%s.csv",
+				"backend/data/"+"stock_price_%s.csv",
 				interval,
 			)
 			q.WriteCSV(saveFileNameStock)
