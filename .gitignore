@@ -1,7 +1,6 @@
 *.csv
 *.sql
 !backend/sql/*
-
 backend/data/*
 !backend/data/company_tickers.json
 *.DS_Store

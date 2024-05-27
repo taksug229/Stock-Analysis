@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Ticker}} Stock Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            width: 80%;
+            text-align: center;
+        }
+        .title {
+            font-size: 36px;
+            margin-bottom: 40px;
+            color: #ff4081; /* Red color for Ticker */
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .box {
+            background-color: #1f1f1f;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .box h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .box p {
+            font-size: 18px;
+        }
+        .recommendation {
+            font-size: 48px; /* Increased font size for Recommendation */
+            margin-top: 40px;
+            text-align: center;
+        }
+        .recommendation-buy {
+            color: #4caf50;
+        }
+        .recommendation-dont-buy {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">{{.Ticker}}</h1>  <div class="grid">
+            <div class="box">
+                <h2>${{.CurrentStockPrice}}</h2>
+                <p><strong>Current Price</strong></p>
+            </div>
+            <div class="box">
+                <h2>${{.PredictedStockPrice}}</h2>
+                <p><strong>Predicted Price</strong></p>
+            </div>
+            <div class="box">
+                <h2>${{.MarketValue}}</h2>
+                <p><strong>Market Value</strong></p>
+            </div>
+            <div class="box">
+                <h2>${{.IntrinsicValue}}</h2>
+                <p><strong>Intrinsic Value</strong></p>
+            </div>
+        </div>
+        <h2 class="recommendation {{if eq .Recommendation "Buy"}}recommendation-buy{{else}}recommendation-dont-buy{{end}}">
+            {{.Recommendation}}
+        </h2>
+    </div>
+</body>
+</html>
