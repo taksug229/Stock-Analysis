@@ -139,9 +139,9 @@ type CombinedData struct {
 // Struct to hold template data
 type LiveStockData struct {
 	Ticker              string
-	CurrentStockPrice   float64
-	PredictedStockPrice float64
-	MarketValue         float64
-	IntrinsicValue      float64
+	CurrentStockPrice   string
+	PredictedStockPrice string
+	MarketCap           string
+	IntrinsicValue      string
 	Recommendation      string
 }

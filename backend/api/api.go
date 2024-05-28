@@ -287,6 +287,7 @@ func GetQuoteFromYahoo(symbol, startDate, endDate, period string) (models.Quote,
 		to.Unix(),
 		interval,
 	)
+	log.Println(url)
 	resp, err = client.Get(url)
 	if err != nil {
 		log.Printf("symbol '%s' not found between '%s' and '%s'\n", symbol, startDate, endDate)

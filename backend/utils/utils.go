@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"log"
 	"main/backend/models"
 	"net/http"
@@ -135,4 +136,22 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func ShortenLargeNumbers(value float64) string {
+	var (
+		valueShort  string
+		valueString string
+	)
+	if value >= 1_000_000_000_000 {
+		valueShort = fmt.Sprintf("%.2f", value/1_000_000_000_000)
+		valueString = valueShort + "T"
+	} else if value >= 1_000_000_000 {
+		valueShort = fmt.Sprintf("%.2f", value/1_000_000_000)
+		valueString = valueShort + "B"
+	} else {
+		valueShort = fmt.Sprintf("%.2f", value/1_000_000)
+		valueString = valueShort + "M"
+	}
+	return valueString
 }

@@ -256,7 +256,6 @@ func GetTickerFinancials(ticker string) (float64, int64) {
 	sql := string(sqlBytes)
 	sql = ReplacePlaceholders(sql)
 	sql = ReplacePlaceholder(sql, "TICKER", ticker)
-	log.Println(sql)
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	result, err := ExecuteBigQuerySQL(project, sql)
 	if err != nil {

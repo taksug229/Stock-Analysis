@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"time"
 
+	"main/backend/api"
 	"main/backend/gcp"
 	"main/backend/models"
+	"main/backend/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -22,15 +25,33 @@ func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 	ticker := mux.Vars(r)["id"]
-	intrinsic_val, shares := gcp.GetTickerFinancials(ticker)
+	intrinsicval, shares := gcp.GetTickerFinancials(ticker)
+	today := time.Now()
+	yesterday := today.Add(-24 * time.Hour)
+	todayFormatted := today.Format("2006-01-02")
+	yesterdayFormatted := yesterday.Format("2006-01-02")
+
+	q, _ := api.GetQuoteFromYahoo(ticker, yesterdayFormatted, todayFormatted, "daily")
+	stockprice := q.Close[0]
+	stockpricerounded := fmt.Sprintf("%.2f", stockprice)
+	marketcap := float64(float64(shares) * stockprice)
+	var rec string
+	if intrinsicval > marketcap {
+		rec = "Buy!"
+	} else {
+		rec = "Don't Buy"
+	}
+
+	marketcapShorten := utils.ShortenLargeNumbers(marketcap)
+	intrinsicvalShorten := utils.ShortenLargeNumbers(intrinsicval)
 
 	data := models.LiveStockData{
 		Ticker:              ticker,
-		CurrentStockPrice:   float64(shares),
-		PredictedStockPrice: 1600.00,
-		MarketValue:         1_000_000_000.00,
-		IntrinsicValue:      intrinsic_val,
-		Recommendation:      "Buy",
+		CurrentStockPrice:   stockpricerounded,
+		PredictedStockPrice: "1600.00",
+		MarketCap:           marketcapShorten,
+		IntrinsicValue:      intrinsicvalShorten,
+		Recommendation:      rec,
 	}
 	// Parse the template file
 	tmpl, err := template.ParseFiles("frontend/templates/template.html")
