@@ -135,3 +135,13 @@ type CombinedData struct {
 	Investments []interface{}
 	Securities  []interface{}
 }
+
+// Struct to hold template data
+type LiveStockData struct {
+	Ticker              string
+	CurrentStockPrice   float64
+	PredictedStockPrice float64
+	MarketValue         float64
+	IntrinsicValue      float64
+	Recommendation      string
+}

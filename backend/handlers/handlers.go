@@ -2,9 +2,13 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"main/backend/gcp"
+	"main/backend/models"
+
+	"github.com/gorilla/mux"
 )
 
 func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
@@ -13,6 +17,32 @@ func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
 	err := gcp.PrintQueryResults(sqlFile, w)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
+	}
+}
+
+func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
+	ticker := mux.Vars(r)["id"]
+	intrinsic_val, shares := gcp.GetTickerFinancials(ticker)
+
+	data := models.LiveStockData{
+		Ticker:              ticker,
+		CurrentStockPrice:   float64(shares),
+		PredictedStockPrice: 1600.00,
+		MarketValue:         1_000_000_000.00,
+		IntrinsicValue:      intrinsic_val,
+		Recommendation:      "Buy",
+	}
+	// Parse the template file
+	tmpl, err := template.ParseFiles("frontend/templates/template.html")
+	if err != nil {
+		http.Error(w, "Error parsing template", http.StatusInternalServerError)
+		return
+	}
+
+	// Execute the template with the data
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
 	}
 }
 

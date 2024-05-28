@@ -173,7 +173,7 @@ func CreateMLTable() {
 
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	mltable := os.Getenv("ML_TABLE_NAME")
-	sqlFile := "sql/create_ml_table.sql"
+	sqlFile := "backend/sql/create_ml_table.sql"
 	sqlBytes, err := os.ReadFile(sqlFile)
 	if err != nil {
 		log.Fatalf("Error reading SQL file: %v", err)
@@ -181,7 +181,10 @@ func CreateMLTable() {
 	sql := string(sqlBytes)
 
 	sql = ReplacePlaceholders(sql)
-	ExecuteBigQuerySQL(project, sql)
+	_, err = ExecuteBigQuerySQL(project, sql)
+	if err != nil {
+		log.Fatalf("Failed to execute query: %v", err)
+	}
 	log.Printf("Table created successfully: %v", mltable)
 }
 
@@ -198,31 +201,84 @@ func ReplacePlaceholder(sql, placeholder, value string) string {
 	return strings.ReplaceAll(sql, fmt.Sprintf("${%s}", placeholder), value)
 }
 
-func ExecuteBigQuerySQL(projectID, sql string) {
+func ExecuteBigQuerySQL(projectID, sql string) ([][]bigquery.Value, error) {
 	ctx := context.Background()
 	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
-		log.Printf("bigquery.NewClient: %v\n", err)
-		log.Fatal()
+		return nil, fmt.Errorf("bigquery.NewClient: %v", err)
 	}
 	defer client.Close()
 
 	query := client.Query(sql)
 	job, err := query.Run(ctx)
 	if err != nil {
-		log.Printf("query.Run: %v\n", err)
-		log.Fatal()
+		return nil, fmt.Errorf("query.Run: %v", err)
 	}
 
 	status, err := job.Wait(ctx)
 	if err != nil {
-		log.Printf("job.Wait: %v\n", err)
-		log.Fatal()
+		return nil, fmt.Errorf("job.Wait: %v", err)
 	}
 
 	if err := status.Err(); err != nil {
-		log.Printf("job completed with error: %v\n", err)
-		log.Fatal()
+		return nil, fmt.Errorf("job completed with error: %v", err)
+	}
+
+	it, err := job.Read(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("job.Read: %v", err)
+	}
+
+	var results [][]bigquery.Value
+	for {
+		var row []bigquery.Value
+		err := it.Next(&row)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("iterator.Next: %v", err)
+		}
+		results = append(results, row)
+	}
+	return results, nil
+}
+
+func GetTickerFinancials(ticker string) (float64, int64) {
+	utils.LoadEnv()
+	CheckEnvVars()
+	sqlFile := "backend/sql/get_ticker_info.sql"
+	sqlBytes, err := os.ReadFile(sqlFile)
+	if err != nil {
+		log.Printf("Error reading SQL file: %v\n", err)
+		return 0, 0
+	}
+	sql := string(sqlBytes)
+	sql = ReplacePlaceholders(sql)
+	sql = ReplacePlaceholder(sql, "TICKER", ticker)
+	log.Println(sql)
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	result, err := ExecuteBigQuerySQL(project, sql)
+	if err != nil {
+		log.Printf("Failed to execute query: %v", err)
+		return 0, 0
+	}
+	if result == nil {
+		fmt.Println("Query executed successfully with no results (e.g., table created).")
+		return 0, 0
+	} else if len(result) > 0 && len(result[0]) >= 2 {
+		// Accessing the first row and its two columns
+		intrinsic_val, ok1 := result[0][0].(float64) // or the expected type
+		shares, ok2 := result[0][1].(int64)          // or the expected type
+		if ok1 && ok2 {
+			return intrinsic_val, shares
+		} else {
+			log.Println("Unexpected data type returned from query")
+			return 0, 0
+		}
+	} else {
+		fmt.Println("Query returned no data or insufficient columns.")
+		return 0, 0
 	}
 }
 
