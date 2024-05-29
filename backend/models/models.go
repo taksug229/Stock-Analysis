@@ -128,12 +128,13 @@ type CombinedData struct {
 	Ticker      []string
 	CIK         []int
 	EntityName  []string
-	NetCash     []interface{}
-	PropertyExp []interface{}
-	Shares      []interface{}
-	CashAsset   []interface{}
-	Investments []interface{}
-	Securities  []interface{}
+	Revenue     []float64
+	NetCash     []float64
+	PropertyExp []float64
+	Shares      []float64
+	CashAsset   []float64
+	Investments []float64
+	Securities  []float64
 }
 
 // Struct to hold template data

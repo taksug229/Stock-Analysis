@@ -150,7 +150,7 @@ func UploadToGCSToBigQuery() {
 	intervals := strings.Split(os.Getenv("INTERVALS"), ",")
 	stockTableName := os.Getenv("STOCK_TABLE_NAME")
 	for _, interval := range intervals {
-		stockPriceFile := fmt.Sprintf("data/stock_price_%s.csv", interval)
+		stockPriceFile := fmt.Sprintf("backend/data/stock_price_%s.csv", interval)
 
 		if _, err := os.Stat(stockPriceFile); os.IsNotExist(err) {
 			log.Printf("Skipping %s: File does not exist.\n", stockPriceFile)

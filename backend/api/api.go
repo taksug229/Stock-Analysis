@@ -62,6 +62,8 @@ func FetchData(apiURL string) (models.FinancialData, error) {
 }
 
 func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, error) {
+	revenueUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/Revenues/USD/CY%d.json", cy)
+	revenueContractUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/USD/CY%d.json", cy)
 	netCashUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivities/USD/CY%d.json", cy)
 	propertyExpUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment/USD/CY%d.json", cy)
 	sharesOutUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfSharesOutstandingBasic/shares/CY%d.json", cy)
@@ -80,16 +82,25 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	securityQ1Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/MarketableSecuritiesCurrent/USD/CY%dQ1I.json", cy)
 
 	var (
-		combinedData models.CombinedData
-		netcash      interface{}
-		propertyexp  interface{}
-		shares       interface{}
-		cashasset    interface{}
-		invest       interface{}
-		security     interface{}
-		startdate    string
-		enddate      string
+		combinedData    models.CombinedData
+		revenue         float64
+		revenuecontract float64
+		revenuecombined float64
+		netcash         float64
+		propertyexp     float64
+		shares          float64
+		cashasset       float64
+		invest          float64
+		security        float64
+		startdate       string
+		enddate         string
 	)
+	revenueData, err := FetchData(revenueUrl)
+	if err != nil {
+		return combinedData, err
+	}
+	revenueContractData, _ := FetchData(revenueContractUrl)
+
 	netCashData, err := FetchData(netCashUrl)
 	if err != nil {
 		return combinedData, err
@@ -134,8 +145,11 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	for _, data := range tickers {
 		cik := data.CIK
 		startdate, enddate = utils.GetCYDates(netCashData, cik)
+		revenue = utils.GetFinancialKPIData(revenueData, cik)
+		revenuecontract = utils.GetFinancialKPIData(revenueContractData, cik)
+		revenuecombined = revenue + revenuecontract
 		netcash = utils.GetFinancialKPIData(netCashData, cik)
-		propertyexp = utils.GetFinancialKPIData(propertyExpData, cik)
+		propertyexp = math.Abs(utils.GetFinancialKPIData(propertyExpData, cik))
 		shares = utils.GetFinancialKPIData(sharesOutData, cik)
 		// if netcash == 0 || propertyexp == 0 || shares == 0 {
 		// 	continue
@@ -148,37 +162,39 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		}
 		security = getAssetFromQuarters(securitySlice, cik)
 
-		var propertyexpfloat, sharesfloat float64
-		switch v := propertyexp.(type) {
-		case int:
-			propertyexpfloat = math.Abs(float64(v))
-		case float64:
-			propertyexpfloat = math.Abs(v)
-		default:
-			continue
+		// var propertyexpfloat, sharesfloat float64
+		// switch v := propertyexp.(type) {
+		// case int:
+		// 	propertyexpfloat = math.Abs(float64(v))
+		// case float64:
+		// 	propertyexpfloat = math.Abs(v)
+		// default:
+		// 	continue
+		// }
+		// switch v := shares.(type) {
+		// case int:
+		// 	sharesfloat = float64(v)
+		// case float64:
+		// 	sharesfloat = v
+		// default:
+		// 	continue
+		// }
+		if shares < 1000 {
+			shares = shares * 1_000_000
 		}
-		switch v := shares.(type) {
-		case int:
-			sharesfloat = float64(v)
-		case float64:
-			sharesfloat = v
-		default:
-			continue
-		}
-		if sharesfloat < 1000 {
-			sharesfloat = sharesfloat * 1_000_000
-		}
-		sharesfloat = math.Round(sharesfloat)
+		shares = math.Round(shares)
 		combinedData.CY = append(combinedData.CY, cy)
 		combinedData.StartDate = append(combinedData.StartDate, startdate)
 		combinedData.EndDate = append(combinedData.EndDate, enddate)
 		combinedData.Ticker = append(combinedData.Ticker, data.Ticker)
 		combinedData.CIK = append(combinedData.CIK, cik)
 		combinedData.EntityName = append(combinedData.EntityName, data.Title)
+		combinedData.Revenue = append(combinedData.Revenue, revenuecombined)
 		combinedData.NetCash = append(combinedData.NetCash, netcash)
-		combinedData.PropertyExp = append(combinedData.PropertyExp, propertyexpfloat)
-		combinedData.Shares = append(combinedData.Shares, sharesfloat)
+		combinedData.PropertyExp = append(combinedData.PropertyExp, propertyexp)
+		combinedData.Shares = append(combinedData.Shares, shares)
 		combinedData.CashAsset = append(combinedData.CashAsset, cashasset)
+
 		combinedData.Investments = append(combinedData.Investments, invest)
 		combinedData.Securities = append(combinedData.Securities, security)
 
@@ -191,22 +207,23 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 }
 
 func getAssetFromQuarters(assetSlice []models.FinancialData, cik int) float64 {
-	assetfloat := 0.0
+	// assetfloat := 0.0
+	asset := 0.0
 	for _, assetData := range assetSlice {
-		asset := utils.GetFinancialKPIData(assetData, cik)
-		switch v := asset.(type) {
-		case int:
-			assetfloat = float64(v)
-		case float64:
-			assetfloat = v
-		default:
-			continue
-		}
-		if assetfloat > 0 {
+		asset = utils.GetFinancialKPIData(assetData, cik)
+		// switch v := asset.(type) {
+		// case int:
+		// 	assetfloat = float64(v)
+		// case float64:
+		// 	assetfloat = v
+		// default:
+		// 	continue
+		// }
+		if asset > 0 {
 			break
 		}
 	}
-	return assetfloat
+	return asset
 }
 
 func SaveFinancialData() map[string]struct{} {
@@ -287,7 +304,6 @@ func GetQuoteFromYahoo(symbol, startDate, endDate, period string) (models.Quote,
 		to.Unix(),
 		interval,
 	)
-	log.Println(url)
 	resp, err = client.Get(url)
 	if err != nil {
 		log.Printf("symbol '%s' not found between '%s' and '%s'\n", symbol, startDate, endDate)

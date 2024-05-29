@@ -50,7 +50,7 @@ func GetTicker(filepath string) []models.Ticker {
 	return tickers_ordered
 }
 
-func GetFinancialKPIData(data models.FinancialData, cik int) interface{} {
+func GetFinancialKPIData(data models.FinancialData, cik int) float64 {
 	for _, d := range data.Data {
 		if d.CIK == cik {
 			return d.Val
@@ -101,7 +101,7 @@ func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
 	defer writer.Flush()
 
 	if os.IsNotExist(file_err) {
-		writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "NetCash", "PropertyExp", "Shares", "CashAsset", "Investments", "Securities"})
+		writer.Write([]string{"CY", "StartDate", "EndDate", "Ticker", "CIK", "EntityName", "Revenue", "NetCash", "PropertyExp", "Shares", "CashAsset", "Investments", "Securities"})
 	}
 	for i := 0; i < len(combinedData.CY); i++ {
 		row := []string{
@@ -111,6 +111,7 @@ func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
 			combinedData.Ticker[i],
 			strconv.Itoa(combinedData.CIK[i]),
 			combinedData.EntityName[i],
+			FormatInterface(combinedData.Revenue[i]),
 			FormatInterface(combinedData.NetCash[i]),
 			FormatInterface(combinedData.PropertyExp[i]),
 			FormatInterface(combinedData.Shares[i]),

@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"main/backend/api"
+	"main/backend/gcp"
 	"main/backend/router"
 	"net/http"
 	"time"
@@ -14,11 +16,11 @@ import (
 )
 
 func main() {
-	// uniqueTickers := api.SaveFinancialData()
-	// uniqueTickers["VOO"] = struct{}{}
-	// api.SaveQuoteFromYahoo(uniqueTickers)
-	// gcp.UploadToGCSToBigQuery()
-	// gcp.CreateMLTable()
+	uniqueTickers := api.SaveFinancialData()
+	uniqueTickers["VOO"] = struct{}{}
+	api.SaveQuoteFromYahoo(uniqueTickers)
+	gcp.UploadToGCSToBigQuery()
+	gcp.CreateMLTable()
 	r := router.NewRouter()
 	r.Handle("/metrics", promhttp.Handler())
 	srv := &http.Server{
