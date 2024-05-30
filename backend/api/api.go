@@ -66,10 +66,15 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	revenueContractUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/USD/CY%d.json", cy)
 	salesRevenueUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/SalesRevenueNet/USD/CY%d.json", cy)
 	netCashUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivities/USD/CY%d.json", cy)
+	netCashContinuedUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/NetCashProvidedByUsedInOperatingActivitiesContinuingOperations/USD/CY%d.json", cy)
 	propertyExpUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment/USD/CY%d.json", cy)
 	propertyExpAssetsUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/PaymentsToAcquireProductiveAssets/USD/CY%d.json", cy)
 	sharesOutUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfSharesOutstandingBasic/shares/CY%d.json", cy)
-
+	sharesDilutedUrl := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/WeightedAverageNumberOfDilutedSharesOutstanding/shares/CY%d.json", cy)
+	investCashQ4Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/InvestmentsAndCash/USD/CY%dQ4I.json", cy)
+	investCashQ3Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/InvestmentsAndCash/USD/CY%dQ3I.json", cy)
+	investCashQ2Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/InvestmentsAndCash/USD/CY%dQ2I.json", cy)
+	investCashQ1Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/InvestmentsAndCash/USD/CY%dQ1I.json", cy)
 	curCashQ4Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/CashAndCashEquivalentsAtCarryingValue/USD/CY%dQ4I.json", cy)
 	curCashQ3Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/CashAndCashEquivalentsAtCarryingValue/USD/CY%dQ3I.json", cy)
 	curCashQ2Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/CashAndCashEquivalentsAtCarryingValue/USD/CY%dQ2I.json", cy)
@@ -78,6 +83,10 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	investQ3Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/AvailableForSaleSecuritiesCurrent/USD/CY%dQ3I.json", cy)
 	investQ2Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/AvailableForSaleSecuritiesCurrent/USD/CY%dQ2I.json", cy)
 	investQ1Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/AvailableForSaleSecuritiesCurrent/USD/CY%dQ1I.json", cy)
+	investShortQ4Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/ShortTermInvestments/USD/CY%dQ4I.json", cy)
+	investShortQ3Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/ShortTermInvestments/USD/CY%dQ3I.json", cy)
+	investShortQ2Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/ShortTermInvestments/USD/CY%dQ2I.json", cy)
+	investShortQ1Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/ShortTermInvestments/USD/CY%dQ1I.json", cy)
 	investmentQ4Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/Investments/USD/CY%dQ4I.json", cy)
 	investmentQ3Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/Investments/USD/CY%dQ3I.json", cy)
 	investmentQ2Url := fmt.Sprintf("https://data.sec.gov/api/xbrl/frames/us-gaap/Investments/USD/CY%dQ2I.json", cy)
@@ -94,12 +103,18 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		salesrevenue     float64
 		revenuecombined  float64
 		netcash          float64
+		netcashcontinued float64
+		netcashcombined  float64
 		propertyexp      float64
 		propertyexpasset float64
 		propertycombined float64
 		shares           float64
+		sharesdiluted    float64
+		sharescombined   float64
+		investcashasset  float64
 		cashasset        float64
 		invest           float64
+		investshort      float64
 		investment       float64
 		investcombined   float64
 		security         float64
@@ -109,24 +124,26 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	revenueData, _ := FetchData(revenueUrl)
 	revenueContractData, _ := FetchData(revenueContractUrl)
 	salesRevenueData, _ := FetchData(salesRevenueUrl)
-
-	netCashData, err := FetchData(netCashUrl)
-	if err != nil {
-		return combinedData, err
-	}
+	netCashData, _ := FetchData(netCashUrl)
+	netCashContinuedData, _ := FetchData(netCashContinuedUrl)
 	propertyExpData, _ := FetchData(propertyExpUrl)
 	propertyExpAssetData, _ := FetchData(propertyExpAssetsUrl)
-
-	sharesOutData, err := FetchData(sharesOutUrl)
-	if err != nil {
-		return combinedData, err
-	}
-
+	sharesOutData, _ := FetchData(sharesOutUrl)
+	sharesDilutedData, _ := FetchData(sharesDilutedUrl)
 	time.Sleep(time.Second)
+	investCashDataQ4, _ := FetchData(investCashQ4Url)
+	investCashDataQ3, _ := FetchData(investCashQ3Url)
+	investCashDataQ2, _ := FetchData(investCashQ2Url)
+	investCashDataQ1, _ := FetchData(investCashQ1Url)
 	curCashDataQ4, _ := FetchData(curCashQ4Url)
 	curCashDataQ3, _ := FetchData(curCashQ3Url)
 	curCashDataQ2, _ := FetchData(curCashQ2Url)
 	curCashDataQ1, _ := FetchData(curCashQ1Url)
+	time.Sleep(time.Second)
+	investShortDataQ4, _ := FetchData(investShortQ4Url)
+	investShortDataQ3, _ := FetchData(investShortQ3Url)
+	investShortDataQ2, _ := FetchData(investShortQ2Url)
+	investShortDataQ1, _ := FetchData(investShortQ1Url)
 	investDataQ4, _ := FetchData(investQ4Url)
 	investDataQ3, _ := FetchData(investQ3Url)
 	investDataQ2, _ := FetchData(investQ2Url)
@@ -141,8 +158,10 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	securityDataQ2, _ := FetchData(securityQ2Url)
 	securityDataQ1, _ := FetchData(securityQ1Url)
 
+	investCashSlice := []models.FinancialData{investCashDataQ4, investCashDataQ3, investCashDataQ2, investCashDataQ1}
 	curCashSlice := []models.FinancialData{curCashDataQ4, curCashDataQ3, curCashDataQ2, curCashDataQ1}
 	investSlice := []models.FinancialData{investDataQ4, investDataQ3, investDataQ2, investDataQ1}
+	investshortSlice := []models.FinancialData{investShortDataQ4, investShortDataQ3, investShortDataQ2, investShortDataQ1}
 	investmentSlice := []models.FinancialData{investmentDataQ4, investmentDataQ3, investmentDataQ2, investmentDataQ1}
 	securitySlice := []models.FinancialData{securityDataQ4, securityDataQ3, securityDataQ2, securityDataQ1}
 
@@ -162,46 +181,29 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		salesrevenue = utils.GetFinancialKPIData(salesRevenueData, cik)
 		revenuecombined = math.Max(revenue, math.Max(revenuecontract, salesrevenue))
 		netcash = utils.GetFinancialKPIData(netCashData, cik)
+		netcashcontinued = utils.GetFinancialKPIData(netCashContinuedData, cik)
+		netcashcombined = math.Max(netcash, netcashcontinued)
 		propertyexp = math.Abs(utils.GetFinancialKPIData(propertyExpData, cik))
 		propertyexpasset = math.Abs(utils.GetFinancialKPIData(propertyExpAssetData, cik))
 		propertycombined = math.Max(propertyexp, propertyexpasset)
-
 		shares = utils.GetFinancialKPIData(sharesOutData, cik)
-		// if netcash == 0 || propertyexp == 0 || shares == 0 {
-		// 	continue
-		// }
+		sharesdiluted = utils.GetFinancialKPIData(sharesDilutedData, cik)
+		sharescombined = math.Max(shares, sharesdiluted)
+
 		cashasset = getAssetFromQuarters(curCashSlice, cik)
 		invest = getAssetFromQuarters(investSlice, cik)
-		// if cy <= 2022 {
-		// 	invest = getAssetFromQuarters(investSlice, cik)
-		// } else {
-		// 	invest = 0
-		// }
+		investshort = getAssetFromQuarters(investshortSlice, cik)
 		investment = getAssetFromQuarters(investmentSlice, cik)
-		investcombined = math.Max(invest, investment)
+		investcashasset = getAssetFromQuarters(investCashSlice, cik)
+		investcombined = math.Max(invest, math.Max(investshort, math.Max(investment, investcashasset)))
 		security = getAssetFromQuarters(securitySlice, cik)
-
-		// var propertyexpfloat, sharesfloat float64
-		// switch v := propertyexp.(type) {
-		// case int:
-		// 	propertyexpfloat = math.Abs(float64(v))
-		// case float64:
-		// 	propertyexpfloat = math.Abs(v)
-		// default:
-		// 	continue
-		// }
-		// switch v := shares.(type) {
-		// case int:
-		// 	sharesfloat = float64(v)
-		// case float64:
-		// 	sharesfloat = v
-		// default:
-		// 	continue
-		// }
-		if shares < 1000 {
-			shares = shares * 1_000_000
+		if sharescombined < 1000 {
+			sharescombined = sharescombined * 1_000_000
 		}
-		shares = math.Round(shares)
+		// if netcashcombined == 0 || propertycombined == 0 || sharescombined == 0 {
+		// 	continue
+		// }
+		// sharescombined = math.Round(sharescombined)
 		combinedData.CY = append(combinedData.CY, cy)
 		combinedData.StartDate = append(combinedData.StartDate, startdate)
 		combinedData.EndDate = append(combinedData.EndDate, enddate)
@@ -209,9 +211,9 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		combinedData.CIK = append(combinedData.CIK, cik)
 		combinedData.EntityName = append(combinedData.EntityName, data.Title)
 		combinedData.Revenue = append(combinedData.Revenue, revenuecombined)
-		combinedData.NetCash = append(combinedData.NetCash, netcash)
+		combinedData.NetCash = append(combinedData.NetCash, netcashcombined)
 		combinedData.PropertyExp = append(combinedData.PropertyExp, propertycombined)
-		combinedData.Shares = append(combinedData.Shares, shares)
+		combinedData.Shares = append(combinedData.Shares, sharescombined)
 		combinedData.CashAsset = append(combinedData.CashAsset, cashasset)
 
 		combinedData.Investments = append(combinedData.Investments, investcombined)
