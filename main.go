@@ -12,7 +12,7 @@ import (
 func main() {
 	uniqueTickers := api.SaveFinancialData()
 	uniqueTickers["VOO"] = struct{}{}
-	// api.SaveQuoteFromYahoo(uniqueTickers)
+	api.SaveQuoteFromYahoo(uniqueTickers)
 	gcp.UploadToGCSToBigQuery()
 	// gcp.CreateMLTable()
 	// r := router.NewRouter()

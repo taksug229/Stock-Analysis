@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"main/backend/models"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -82,6 +83,18 @@ func FormatInterface(val interface{}) string {
 	default:
 		return ""
 	}
+}
+
+func MaxOfFloats(values ...float64) float64 {
+	if len(values) == 0 {
+		return 0
+	}
+
+	maxValue := values[0]
+	for _, value := range values[1:] {
+		maxValue = math.Max(maxValue, value)
+	}
+	return maxValue
 }
 
 func SaveCYCombinedData(combinedData models.CombinedData, saveFileName string) {
