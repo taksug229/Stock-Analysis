@@ -14,7 +14,8 @@ func main() {
 	// api.SaveQuoteFromYahoo(uniqueTickers)
 	// gcp.UploadToGCSToBigQuery()
 	// gcp.CreateMLTable()
-	gcp.CreateTrainTestTable()
+	// gcp.CreateTrainTestTable()
+	gcp.CreateModel()
 	// r := router.NewRouter()
 	// r.Handle("/metrics", promhttp.Handler())
 	// srv := &http.Server{
