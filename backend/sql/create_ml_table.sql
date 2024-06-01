@@ -1,6 +1,8 @@
 DECLARE discount_rate FLOAT64 DEFAULT 0.15;
 
-CREATE TEMP FUNCTION calculate_cagr( start_fcf FLOAT64, end_fcf FLOAT64, cagr_years INT64 ) RETURNS FLOAT64 AS ( CASE WHEN start_fcf > 0 AND end_fcf > 0 THEN ROUND((POW(start_fcf / end_fcf, 1 / cagr_years) - 1), 4) WHEN start_fcf > end_fcf THEN ROUND((POW((start_fcf - end_fcf + ABS(end_fcf)) / ABS(end_fcf), 1 / cagr_years) - 1), 4) WHEN (start_fcf < 0 AND end_fcf < 0) AND (start_fcf < end_fcf) THEN ROUND((POW(ABS(start_fcf) / ABS(end_fcf), 1 / cagr_years) - 1), 4) * -1 WHEN start_fcf < 0 AND end_fcf > 0 THEN ROUND(((start_fcf / end_fcf) / cagr_years), 4) ELSE NULL END );
+CREATE TEMP FUNCTION calculate_cagr( start_fcf FLOAT64, end_fcf FLOAT64, cagr_years INT64 ) RETURNS FLOAT64 AS ( CASE WHEN start_fcf = 0 OR end_fcf = 0 THEN NULL WHEN start_fcf > 0 AND end_fcf > 0 THEN ROUND((POW(start_fcf / end_fcf, 1 / cagr_years) - 1), 4) WHEN start_fcf > end_fcf THEN ROUND((POW((start_fcf - end_fcf + ABS(end_fcf)) / ABS(end_fcf), 1 / cagr_years) - 1), 4) WHEN (start_fcf < 0 AND end_fcf < 0) AND (start_fcf < end_fcf) THEN ROUND((POW(ABS(start_fcf) / ABS(end_fcf), 1 / cagr_years) - 1), 4) * -1 WHEN start_fcf < 0 AND end_fcf > 0 THEN ROUND(((start_fcf / end_fcf) / cagr_years), 4) ELSE NULL END );
+
+CREATE TEMP FUNCTION check_valid_cagr( cy ANY TYPE, revenue ANY TYPE, fcf ANY TYPE, assets ANY TYPE ) RETURNS BOOL AS ( cy IS NOT NULL AND COALESCE(revenue, 0) != 0 AND COALESCE(fcf, 0) != 0 AND COALESCE(assets, 0) != 0 );
 
 CREATE TEMP FUNCTION calculate_intrinsic_value( free_cash_flow FLOAT64, growth_rate FLOAT64, assets FLOAT64, discount_rate FLOAT64 ) RETURNS FLOAT64 AS ( (
 WITH compounded AS
@@ -33,15 +35,14 @@ CREATE TABLE IF NOT EXISTS `${DATASET_NAME}.${ML_TABLE_NAME}` ( date date, ticke
 INSERT INTO `${DATASET_NAME}.${ML_TABLE_NAME}` (date, ticker, revenue, fcf, assets, cagr_yrs, revenue_cagr, fcf_cagr, assets_cagr, intrinsic_val, mrkt_cap, mrkt_intrinsic_ratio, stockprice_last_yr, stockprice_current, stock_cagr, volume_last_yr, stockprice_future_1yr)
 WITH tfcf AS
 (
-    SELECT  cy + 1                                                                     AS cy,
+    SELECT  cy + 1                AS cy,
             ticker,
             revenue,
-            CASE WHEN netcash - propertyexp = 0 THEN 1  ELSE netcash - propertyexp END AS fcf,
+            netcash - propertyexp AS fcf,
             shares,
-            CAST(cashasset + investments + securities AS INT64)                        AS assets
+            CASE WHEN (investments = securities AND investments > 0) THEN CAST(cashasset + investments AS INT64)  ELSE CAST(cashasset + investments + securities AS INT64) END AS assets
     FROM `${DATASET_NAME}.${FINANICIAL_TABLE_NAME}`
     WHERE cy BETWEEN 2008 AND 2023
-    AND netcash > 0
     AND propertyexp > 0
     AND shares > 0
     AND (cashasset > 0 OR investments > 0 OR securities > 0 )
@@ -55,19 +56,19 @@ WITH tfcf AS
                 a.shares,
                 a.revenue,
                 a.fcf,
-                a.cy - CASE WHEN b.cy IS NOT NULL THEN b.cy WHEN c.cy IS NOT NULL THEN c.cy WHEN d.cy IS NOT NULL THEN d.cy WHEN e.cy IS NOT NULL THEN e.cy END AS cagr_yrs,
-                CASE WHEN b.revenue IS NOT NULL THEN calculate_cagr(a.revenue,b.revenue,10)
-                     WHEN c.revenue IS NOT NULL THEN calculate_cagr(a.revenue,c.revenue,7)
-                     WHEN d.revenue IS NOT NULL THEN calculate_cagr(a.revenue,d.revenue,5)
-                     WHEN e.revenue IS NOT NULL THEN calculate_cagr(a.revenue,e.revenue,3) END AS revenue_cagr,
-                CASE WHEN b.fcf IS NOT NULL THEN calculate_cagr(a.fcf,b.fcf,10)
-                     WHEN c.fcf IS NOT NULL THEN calculate_cagr(a.fcf,c.fcf,7)
-                     WHEN d.fcf IS NOT NULL THEN calculate_cagr(a.fcf,d.fcf,5)
-                     WHEN e.fcf IS NOT NULL THEN calculate_cagr(a.fcf,e.fcf,3) END             AS fcf_cagr,
-                CASE WHEN b.assets IS NOT NULL THEN calculate_cagr(a.assets,b.assets,10)
-                     WHEN c.assets IS NOT NULL THEN calculate_cagr(a.assets,c.assets,7)
-                     WHEN d.assets IS NOT NULL THEN calculate_cagr(a.assets,d.assets,5)
-                     WHEN e.assets IS NOT NULL THEN calculate_cagr(a.assets,e.assets,3) END    AS assets_cagr,
+                a.cy - CASE WHEN check_valid_cagr(b.cy,b.revenue,b.fcf,b.assets) THEN b.cy WHEN check_valid_cagr(c.cy,c.revenue,c.fcf,c.assets ) THEN c.cy WHEN check_valid_cagr(d.cy,d.revenue,d.fcf,d.assets) THEN d.cy WHEN check_valid_cagr(e.cy,e.revenue,e.fcf,e.assets) THEN e.cy ELSE NULL END AS cagr_yrs,
+                CASE WHEN check_valid_cagr(b.cy,b.revenue,b.fcf,b.assets) THEN calculate_cagr(a.revenue,b.revenue,10)
+                     WHEN check_valid_cagr(c.cy,c.revenue,c.fcf,c.assets ) THEN calculate_cagr(a.revenue,c.revenue,7)
+                     WHEN check_valid_cagr(d.cy,d.revenue,d.fcf,d.assets) THEN calculate_cagr(a.revenue,d.revenue,5)
+                     WHEN check_valid_cagr(e.cy,e.revenue,e.fcf,e.assets) THEN calculate_cagr(a.revenue,e.revenue,3) END AS revenue_cagr,
+                CASE WHEN check_valid_cagr(b.cy,b.revenue,b.fcf,b.assets) THEN calculate_cagr(a.fcf,b.fcf,10)
+                     WHEN check_valid_cagr(c.cy,c.revenue,c.fcf,c.assets ) THEN calculate_cagr(a.fcf,c.fcf,7)
+                     WHEN check_valid_cagr(d.cy,d.revenue,d.fcf,d.assets) THEN calculate_cagr(a.fcf,d.fcf,5)
+                     WHEN check_valid_cagr(e.cy,e.revenue,e.fcf,e.assets) THEN calculate_cagr(a.fcf,e.fcf,3) END         AS fcf_cagr,
+                CASE WHEN check_valid_cagr(b.cy,b.revenue,b.fcf,b.assets) THEN calculate_cagr(a.assets,b.assets,10)
+                     WHEN check_valid_cagr(c.cy,c.revenue,c.fcf,c.assets ) THEN calculate_cagr(a.assets,c.assets,7)
+                     WHEN check_valid_cagr(d.cy,d.revenue,d.fcf,d.assets) THEN calculate_cagr(a.assets,d.assets,5)
+                     WHEN check_valid_cagr(e.cy,e.revenue,e.fcf,e.assets) THEN calculate_cagr(a.assets,e.assets,3) END   AS assets_cagr,
                 a.assets
         FROM tfcf a
         LEFT JOIN tfcf b
@@ -80,6 +81,7 @@ WITH tfcf AS
         ON a.ticker = e.ticker AND a.cy = e.cy + 3
     )
     WHERE cagr_yrs IS NOT NULL
+    AND shares > 0
 ), sp AS
 (
     SELECT  datetime,

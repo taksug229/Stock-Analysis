@@ -203,14 +203,6 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 	securitySlice := []models.FinancialData{securityDataQ4, securityDataQ3, securityDataQ2, securityDataQ1}
 	marketSecuritySlice := []models.FinancialData{marketSecurityDataQ4, marketSecurityDataQ3, marketSecurityDataQ2, marketSecurityDataQ1}
 
-	utils.LoadEnv()
-	maxTickers := os.Getenv("MAXTICKERS")
-	skipIteration := true
-	maxTickersInt, err := strconv.Atoi(maxTickers)
-	if err != nil {
-		skipIteration = false
-	}
-	count := 0
 	for _, data := range tickers {
 		cik := data.CIK
 		startdate, enddate = utils.GetCYDates(netCashData, cik)
@@ -233,6 +225,9 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		if sharescombined < 1000 {
 			sharescombined = sharescombined * 1_000_000
 		}
+		if revenuecombined == 0 || propertycombined == 0 || sharescombined == 0 {
+			continue
+		}
 		curcash = getAssetFromQuarters(curCashSlice, cik)
 		cashequiv = getAssetFromQuarters(cashEquivSlice, cik)
 		cashcombined = utils.MaxOfFloats(curcash, cashequiv)
@@ -245,9 +240,7 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		marketsecurity = getAssetFromQuarters(marketSecuritySlice, cik)
 		securitycombined = utils.MaxOfFloats(security, marketsecurity)
 		sharescombined = math.Round(sharescombined)
-		if revenuecombined == 0 || netcashcombined == 0 || propertycombined == 0 || sharescombined == 0 || (cashcombined == 0 && investcombined == 0 && securitycombined == 0) {
-			continue
-		}
+		securitycombined = math.Round(securitycombined)
 		combinedData.CY = append(combinedData.CY, cy)
 		combinedData.StartDate = append(combinedData.StartDate, startdate)
 		combinedData.EndDate = append(combinedData.EndDate, enddate)
@@ -261,11 +254,6 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		combinedData.CashAsset = append(combinedData.CashAsset, cashcombined)
 		combinedData.Investments = append(combinedData.Investments, investcombined)
 		combinedData.Securities = append(combinedData.Securities, securitycombined)
-
-		count++
-		if skipIteration && count >= maxTickersInt {
-			break
-		}
 	}
 	return combinedData, nil
 }
