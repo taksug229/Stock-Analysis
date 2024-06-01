@@ -225,9 +225,6 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		if sharescombined < 1000 {
 			sharescombined = sharescombined * 1_000_000
 		}
-		if revenuecombined == 0 || propertycombined == 0 || sharescombined == 0 {
-			continue
-		}
 		curcash = getAssetFromQuarters(curCashSlice, cik)
 		cashequiv = getAssetFromQuarters(cashEquivSlice, cik)
 		cashcombined = utils.MaxOfFloats(curcash, cashequiv)
@@ -241,6 +238,9 @@ func GetCYCombinedData(tickers []models.Ticker, cy int) (models.CombinedData, er
 		securitycombined = utils.MaxOfFloats(security, marketsecurity)
 		sharescombined = math.Round(sharescombined)
 		securitycombined = math.Round(securitycombined)
+		if revenuecombined == 0 || propertycombined == 0 || sharescombined == 0 || (cashcombined == 0 && investcombined == 0 && securitycombined == 0) {
+			continue
+		}
 		combinedData.CY = append(combinedData.CY, cy)
 		combinedData.StartDate = append(combinedData.StartDate, startdate)
 		combinedData.EndDate = append(combinedData.EndDate, enddate)
