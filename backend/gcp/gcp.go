@@ -167,25 +167,36 @@ func UploadToGCSToBigQuery() {
 	}
 }
 
-func CreateMLTable() {
-	utils.LoadEnv()
-	CheckEnvVars()
-
-	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
-	mltable := os.Getenv("ML_TABLE_NAME")
-	sqlFile := "backend/sql/create_ml_table.sql"
+func CreateTable(project, sqlFile string) {
 	sqlBytes, err := os.ReadFile(sqlFile)
 	if err != nil {
 		log.Fatalf("Error reading SQL file: %v", err)
 	}
 	sql := string(sqlBytes)
-
 	sql = ReplacePlaceholders(sql)
 	_, err = ExecuteBigQuerySQL(project, sql)
 	if err != nil {
 		log.Fatalf("Failed to execute query: %v", err)
 	}
-	log.Printf("Table created successfully: %v", mltable)
+}
+
+func CreateMLTable() {
+	utils.LoadEnv()
+	CheckEnvVars()
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	table := os.Getenv("ML_TABLE_NAME")
+	sqlFile := "backend/sql/create_ml_table.sql"
+	CreateTable(project, sqlFile)
+	log.Printf("Table created successfully: %v", table)
+}
+
+func CreateTrainTestTable() {
+	utils.LoadEnv()
+	CheckEnvVars()
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	sqlFile := "backend/sql/create_train_test_table.sql"
+	CreateTable(project, sqlFile)
+	log.Println("Table created successfully: train_data & test_data")
 }
 
 func ReplacePlaceholders(sql string) string {

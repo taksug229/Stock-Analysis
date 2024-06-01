@@ -13,7 +13,8 @@ func main() {
 	// uniqueTickers["VOO"] = struct{}{}
 	// api.SaveQuoteFromYahoo(uniqueTickers)
 	// gcp.UploadToGCSToBigQuery()
-	gcp.CreateMLTable()
+	// gcp.CreateMLTable()
+	gcp.CreateTrainTestTable()
 	// r := router.NewRouter()
 	// r.Handle("/metrics", promhttp.Handler())
 	// srv := &http.Server{
