@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"time"
 
@@ -25,7 +26,6 @@ func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 	ticker := mux.Vars(r)["id"]
-	intrinsicval, shares := gcp.GetTickerFinancials(ticker)
 	today := time.Now()
 	yesterday := today.Add(-24 * time.Hour)
 	todayFormatted := today.Format("2006-01-02")
@@ -33,10 +33,13 @@ func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 
 	q, _ := api.GetQuoteFromYahoo(ticker, yesterdayFormatted, todayFormatted, "daily")
 	stockprice := q.Close[0]
+	log.Println(stockprice)
 	stockpricerounded := fmt.Sprintf("%.2f", stockprice)
-	marketcap := float64(float64(shares) * stockprice)
+	intrinsicval, marketcap, predictedStockPrice := gcp.GetPredictedStockPrice(ticker, stockpricerounded)
+
+	predictedStockrounded := fmt.Sprintf("%.2f", predictedStockPrice)
 	var rec string
-	if intrinsicval > marketcap {
+	if ((intrinsicval * 0.7) > marketcap) && (predictedStockPrice > stockprice) {
 		rec = "Buy!"
 	} else {
 		rec = "Don't Buy"
@@ -48,7 +51,7 @@ func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 	data := models.LiveStockData{
 		Ticker:              ticker,
 		CurrentStockPrice:   stockpricerounded,
-		PredictedStockPrice: "1600.00",
+		PredictedStockPrice: predictedStockrounded,
 		MarketCap:           marketcapShorten,
 		IntrinsicValue:      intrinsicvalShorten,
 		Recommendation:      rec,

@@ -1,11 +1,13 @@
 package main
 
 import (
-	"main/backend/gcp"
+	"log"
+	"main/backend/router"
+	"net/http"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	// "time"
-	// "main/backend/api"
-	// "main/backend/gcp"
-	// "main/backend/router"
 )
 
 func main() {
@@ -15,21 +17,22 @@ func main() {
 	// gcp.UploadToGCSToBigQuery()
 	// gcp.CreateMLTable()
 	// gcp.CreateTrainTestTable()
-	gcp.CreateModel()
-	// r := router.NewRouter()
-	// r.Handle("/metrics", promhttp.Handler())
-	// srv := &http.Server{
-	// 	Handler:      r,
-	// 	Addr:         ":8080",
-	// 	WriteTimeout: 15 * time.Second,
-	// 	ReadTimeout:  15 * time.Second,
-	// 	IdleTimeout:  60 * time.Second,
-	// }
+	// gcp.CreateModel()
+	// gcp.PredictModel()
+	r := router.NewRouter()
+	r.Handle("/metrics", promhttp.Handler())
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         ":8080",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
 
-	// log.Println("Starting server on :8080")
-	// if err := srv.ListenAndServe(); err != nil {
-	// 	log.Fatalf("Could not start server: %s\n", err)
-	// }
+	log.Println("Starting server on :8080")
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatalf("Could not start server: %s\n", err)
+	}
 }
 
 // package main

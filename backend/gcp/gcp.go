@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/big"
 	"os"
 	"strings"
 
@@ -209,6 +210,16 @@ func CreateModel() {
 	log.Println("Model created successfully: ml_model")
 }
 
+func PredictModel() {
+	utils.LoadEnv()
+	CheckEnvVars()
+	log.Println("Predicting Test Set")
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	sqlFile := "backend/sql/predict_model.sql"
+	ExecuteSQLFile(project, sqlFile)
+	log.Println("Made created successfully: ml_model")
+}
+
 func ReplacePlaceholders(sql string) string {
 	sql = ReplacePlaceholder(sql, "GOOGLE_CLOUD_PROJECT", os.Getenv("GOOGLE_CLOUD_PROJECT"))
 	sql = ReplacePlaceholder(sql, "DATASET_NAME", os.Getenv("DATASET_NAME"))
@@ -265,40 +276,43 @@ func ExecuteBigQuerySQL(projectID, sql string) ([][]bigquery.Value, error) {
 	return results, nil
 }
 
-func GetTickerFinancials(ticker string) (float64, int64) {
+func GetPredictedStockPrice(ticker, liveStockPrice string) (float64, float64, float64) {
 	utils.LoadEnv()
 	CheckEnvVars()
 	sqlFile := "backend/sql/get_ticker_info.sql"
 	sqlBytes, err := os.ReadFile(sqlFile)
 	if err != nil {
 		log.Printf("Error reading SQL file: %v\n", err)
-		return 0, 0
+		return 0, 0, 0
 	}
 	sql := string(sqlBytes)
 	sql = ReplacePlaceholders(sql)
 	sql = ReplacePlaceholder(sql, "TICKER", ticker)
+	sql = ReplacePlaceholder(sql, "LIVE_STOCK_PRICE", liveStockPrice)
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	result, err := ExecuteBigQuerySQL(project, sql)
 	if err != nil {
 		log.Printf("Failed to execute query: %v", err)
-		return 0, 0
+		return 0, 0, 0
 	}
 	if result == nil {
 		fmt.Println("Query executed successfully with no results (e.g., table created).")
-		return 0, 0
-	} else if len(result) > 0 && len(result[0]) >= 2 {
-		// Accessing the first row and its two columns
-		intrinsic_val, ok1 := result[0][0].(float64) // or the expected type
-		shares, ok2 := result[0][1].(int64)          // or the expected type
-		if ok1 && ok2 {
-			return intrinsic_val, shares
+		return 0, 0, 0
+	} else if len(result) > 0 && len(result[0]) >= 3 {
+		intrinsicValRat, ok1 := result[0][0].(*big.Rat)
+		marketcapint, ok2 := result[0][1].(int64)
+		predictedStockPrice, ok3 := result[0][2].(float64)
+		if ok1 && ok2 && ok3 {
+			intrinsicval, _ := intrinsicValRat.Float64()
+			marketcap := float64(marketcapint)
+			return intrinsicval, marketcap, predictedStockPrice
 		} else {
 			log.Println("Unexpected data type returned from query")
-			return 0, 0
+			return 0, 0, 0
 		}
 	} else {
 		fmt.Println("Query returned no data or insufficient columns.")
-		return 0, 0
+		return 0, 0, 0
 	}
 }
 
