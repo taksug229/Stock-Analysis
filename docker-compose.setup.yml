@@ -1,0 +1,10 @@
+services:
+  setup:
+    build: .
+    container_name: setup
+    command: /setup
+    networks:
+      - monitoring
+
+networks:
+  monitoring:

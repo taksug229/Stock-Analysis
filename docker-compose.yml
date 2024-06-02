@@ -1,11 +1,9 @@
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    container_name: backend
+  server:
+    build: .
+    container_name: server
     volumes:
-      - backend_data:/app/data
+      - server-data:/app/data
     ports:
       - "8080:8080"
     networks:
@@ -21,6 +19,10 @@ services:
       - "9090:9090"
     networks:
       - monitoring
+    depends_on:
+      - server
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
 
   grafana:
     image: grafana/grafana
@@ -31,9 +33,11 @@ services:
       - "3000:3000"
     networks:
       - monitoring
+    depends_on:
+      - prometheus
 
 volumes:
-  backend_data:
+  server-data:
   prometheus-data:
   grafana-data:
 

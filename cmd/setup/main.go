@@ -1,15 +1,18 @@
+// cmd/setup/main.go
 package main
 
 import (
-	"main/backend/router"
+	"log"
 )
 
 func main() {
+	log.Println("Starting environment setup...")
+
 	// uniqueTickers := api.SaveFinancialData()
 	// api.SaveQuoteFromYahoo(uniqueTickers)
 	// gcp.UploadToGCSToBigQuery()
 	// gcp.CreateMLTable()
 	// gcp.CreateTrainTestTable()
 	// gcp.CreateModel()
-	router.NewRouter()
+	log.Println("Environment setup complete!")
 }
