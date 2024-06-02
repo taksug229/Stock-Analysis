@@ -67,18 +67,18 @@
             </div>
             <div class="box">
                 <h2>${{.PredictedStockPrice}}</h2>
-                <p><strong>Predicted Price</strong></p>
+                <p><strong>Predicted Price in 1 Year</strong></p>
             </div>
             <div class="box">
                 <h2>${{.MarketCap}}</h2>
-                <p><strong>Market Value</strong></p>
+                <p><strong>Market Cap</strong></p>
             </div>
             <div class="box">
                 <h2>${{.IntrinsicValue}}</h2>
                 <p><strong>Intrinsic Value</strong></p>
             </div>
         </div>
-        <h2 class="recommendation {{if eq .Recommendation "Buy"}}recommendation-buy{{else}}recommendation-dont-buy{{end}}">
+        <h2 class="recommendation {{if eq .Recommendation "Buy!"}}recommendation-buy{{else}}recommendation-dont-buy{{end}}">
             {{.Recommendation}}
         </h2>
     </div>

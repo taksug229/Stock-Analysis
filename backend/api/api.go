@@ -306,6 +306,7 @@ func SaveFinancialData() map[string]struct{} {
 	log.Println("Saved financial data:", finDataFile)
 	numUniqueTickers := len(uniqueTickers)
 	log.Println("Unique Tickers:", numUniqueTickers)
+	uniqueTickers["VOO"] = struct{}{}
 	return uniqueTickers
 }
 

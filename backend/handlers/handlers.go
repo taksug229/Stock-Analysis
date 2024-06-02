@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"time"
 
@@ -33,9 +32,8 @@ func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 
 	q, _ := api.GetQuoteFromYahoo(ticker, yesterdayFormatted, todayFormatted, "daily")
 	stockprice := q.Close[0]
-	log.Println(stockprice)
 	stockpricerounded := fmt.Sprintf("%.2f", stockprice)
-	intrinsicval, marketcap, predictedStockPrice := gcp.GetPredictedStockPrice(ticker, stockpricerounded)
+	intrinsicval, marketcap, predictedStockPrice := gcp.GetStockInfo(ticker, stockpricerounded)
 
 	predictedStockrounded := fmt.Sprintf("%.2f", predictedStockPrice)
 	var rec string

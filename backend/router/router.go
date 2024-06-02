@@ -1,13 +1,18 @@
 package router
 
 import (
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"main/backend/handlers"
 	"main/backend/utils"
 )
 
-func NewRouter() *mux.Router {
+func NewRouter() {
 	r := mux.NewRouter()
 
 	// Middleware
@@ -20,6 +25,16 @@ func NewRouter() *mux.Router {
 	// r.HandleFunc("/users/{id}", handlers.GetUser).Methods("GET")
 	// r.HandleFunc("/products", handlers.GetProducts).Methods("GET")
 	// r.HandleFunc("/products/{id}", handlers.GetProduct).Methods("GET")
-
-	return r
+	r.Handle("/metrics", promhttp.Handler())
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         ":8080",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+	log.Println("Starting server on :8080")
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatalf("Could not start server: %s\n", err)
+	}
 }

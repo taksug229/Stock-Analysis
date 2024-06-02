@@ -210,16 +210,6 @@ func CreateModel() {
 	log.Println("Model created successfully: ml_model")
 }
 
-func PredictModel() {
-	utils.LoadEnv()
-	CheckEnvVars()
-	log.Println("Predicting Test Set")
-	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
-	sqlFile := "backend/sql/predict_model.sql"
-	ExecuteSQLFile(project, sqlFile)
-	log.Println("Made created successfully: ml_model")
-}
-
 func ReplacePlaceholders(sql string) string {
 	sql = ReplacePlaceholder(sql, "GOOGLE_CLOUD_PROJECT", os.Getenv("GOOGLE_CLOUD_PROJECT"))
 	sql = ReplacePlaceholder(sql, "DATASET_NAME", os.Getenv("DATASET_NAME"))
@@ -276,7 +266,7 @@ func ExecuteBigQuerySQL(projectID, sql string) ([][]bigquery.Value, error) {
 	return results, nil
 }
 
-func GetPredictedStockPrice(ticker, liveStockPrice string) (float64, float64, float64) {
+func GetStockInfo(ticker, liveStockPrice string) (float64, float64, float64) {
 	utils.LoadEnv()
 	CheckEnvVars()
 	sqlFile := "backend/sql/get_ticker_info.sql"
