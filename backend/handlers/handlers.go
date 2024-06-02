@@ -14,12 +14,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
-	// paramStr := strings.Split(r.URL.Path, "/")
-	sqlFile := "backend/sql/get_good_stocks.sql"
-	err := gcp.PrintQueryResults(sqlFile, w)
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	sqlFile := "backend/sql/get_available_tickers.sql"
+	tmpl := template.Must(template.ParseFiles("frontend/templates/index.html"))
+	availableTickers, _ := gcp.GetAvailableTickers(sqlFile)
+	err := tmpl.Execute(w, availableTickers)
 	if err != nil {
-		fmt.Fprintf(w, "%v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
+	sqlFile := "backend/sql/get_good_stocks.sql"
+	tmpl := template.Must(template.ParseFiles("frontend/templates/index.html"))
+	availableTickers, _ := gcp.GetAvailableTickers(sqlFile)
+	err := tmpl.Execute(w, availableTickers)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -65,19 +76,5 @@ func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 	err = tmpl.Execute(w, data)
 	if err != nil {
 		http.Error(w, "Error executing template", http.StatusInternalServerError)
-	}
-}
-
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	var tmpl = template.Must(template.ParseFiles("frontend/templates/index.html"))
-	availableTickers, _ := gcp.GetAvailableTickers()
-	// var tickers = []models.AvailableTicker{
-	// 	{ID: "AAPL"},
-	// 	{ID: "GOOGL"},
-	// 	{ID: "AMZN"},
-	// }
-	err := tmpl.Execute(w, availableTickers)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

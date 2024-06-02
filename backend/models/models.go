@@ -45,7 +45,6 @@ func (q Quote) WriteCSV(filename string) error {
 		}
 	}
 
-	// Check if the file exists
 	_, file_err := os.Stat(filename)
 	if file_err != nil && !os.IsNotExist(file_err) {
 		return file_err
@@ -66,11 +65,7 @@ func (q Quote) WriteCSV(filename string) error {
 			return err
 		}
 	}
-
-	// Get CSV data
 	csv := q.CSV()
-
-	// Write CSV data to file
 	_, err = file.WriteString(csv)
 	if err != nil {
 		return err
@@ -82,7 +77,6 @@ func (q Quote) WriteCSV(filename string) error {
 func (q Quote) CSV() string {
 	precision := getPrecision(q.Symbol)
 	var buffer bytes.Buffer
-	// buffer.WriteString("ticker,datetime,open,high,low,close,volume\n")
 	for bar := range q.Close {
 		str := fmt.Sprintf("%s,%s,%.*f,%.*f,%.*f,%.*f,%.*f\n", q.Symbol, q.Date[bar].Format("2006-01-02 15:04"),
 			precision, q.Open[bar], precision, q.High[bar], precision, q.Low[bar], precision, q.Close[bar], precision, q.Volume[bar])
