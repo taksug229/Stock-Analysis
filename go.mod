@@ -7,8 +7,8 @@ require (
 	cloud.google.com/go/storage v1.41.0
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
-	google.golang.org/api v0.181.0
 	github.com/prometheus/client_golang v1.19.1
+	google.golang.org/api v0.181.0
 )
 
 require (
