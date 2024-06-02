@@ -66,7 +66,7 @@ func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 		Recommendation:      rec,
 	}
 	// Parse the template file
-	tmpl, err := template.ParseFiles("frontend/templates/template.html")
+	tmpl, err := template.ParseFiles("frontend/templates/ticker_info.html")
 	if err != nil {
 		http.Error(w, "Error parsing template", http.StatusInternalServerError)
 		return
