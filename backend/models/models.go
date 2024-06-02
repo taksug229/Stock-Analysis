@@ -1,7 +1,6 @@
 package models
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -76,13 +75,13 @@ func (q Quote) WriteCSV(filename string) error {
 
 func (q Quote) CSV() string {
 	precision := getPrecision(q.Symbol)
-	var buffer bytes.Buffer
+	var builder strings.Builder
 	for bar := range q.Close {
 		str := fmt.Sprintf("%s,%s,%.*f,%.*f,%.*f,%.*f,%.*f\n", q.Symbol, q.Date[bar].Format("2006-01-02 15:04"),
 			precision, q.Open[bar], precision, q.High[bar], precision, q.Low[bar], precision, q.Close[bar], precision, q.Volume[bar])
-		buffer.WriteString(str)
+		builder.WriteString(str)
 	}
-	return buffer.String()
+	return builder.String()
 }
 
 func getPrecision(symbol string) int {
