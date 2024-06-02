@@ -15,8 +15,9 @@ GOOGLE_CLOUD_PROJECT=<YOUR GOOGLE CLOUD PROJECT ID>
 BUCKET_NAME=<YOUR GOOGLE CLOUD STORAGE BUCKET NAME>
 ```
 
-- Allow http/https access for Cloud Engine Instance
-- Open ports 8080, 3000, 9090 for instance
+- Allow http/https access for the instance
+- Open ports `8080`, `3000`, `9090` for the instance
+- Allow API BigQuery Admin and Storage Admin for the instance
 
 ## How to run
 Open GCP Cloud Shell
@@ -32,6 +33,8 @@ git clone https://github.com/taksug229/Stock-Analysis.git
 cd Stock-Analysis/
 
 sudo apt install docker-compose --yes
+
+# This will take around 2-3 hrs to complete due to AutoML model creation in GCP
 sudo docker-compose -f docker-compose.setup.yml up
 sudo docker-compose up
 ```
