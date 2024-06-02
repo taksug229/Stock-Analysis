@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Tickers</title>
+    <title>Check Stock Evaluations</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,12 +14,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             flex-direction: column;
         }
         .container {
             width: 80%;
             text-align: center;
+            margin-top: 100px; /* Add margin to move content lower */
         }
         .title {
             font-size: 36px;
@@ -28,7 +28,7 @@
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Dynamic column creation */
             gap: 20px;
         }
         .box {
@@ -50,7 +50,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Check Stocks</h1>
+        <h1 class="title">Check Stock Evaluations</h1>
         <div class="grid">
             {{range .}}
             <div class="box">

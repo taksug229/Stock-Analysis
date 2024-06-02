@@ -70,13 +70,13 @@ func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	var tmpl = template.Must(template.ParseFiles("frontend/templates/index.html"))
-	var tickers = []models.AvailableTicker{
-		{"AAPL"},
-		{"GOOGL"},
-		{"AMZN"},
-		// Add more tickers here
-	}
-	err := tmpl.Execute(w, tickers)
+	availableTickers, _ := gcp.GetAvailableTickers()
+	// var tickers = []models.AvailableTicker{
+	// 	{ID: "AAPL"},
+	// 	{ID: "GOOGL"},
+	// 	{ID: "AMZN"},
+	// }
+	err := tmpl.Execute(w, availableTickers)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

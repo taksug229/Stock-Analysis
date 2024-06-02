@@ -29,8 +29,7 @@ FROM ML.PREDICT
     LEFT JOIN
     (
         SELECT  ticker,
-                shares,
-
+                shares
         FROM `${DATASET_NAME}.${FINANICIAL_TABLE_NAME}`
         WHERE ticker = "${TICKER}"
         AND cy = 2023

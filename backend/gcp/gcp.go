@@ -14,6 +14,7 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
+	"main/backend/models"
 	"main/backend/utils"
 )
 
@@ -286,7 +287,7 @@ func GetStockInfo(ticker, liveStockPrice string) (float64, float64, float64) {
 		return 0, 0, 0
 	}
 	if result == nil {
-		fmt.Println("Query executed successfully with no results (e.g., table created).")
+		log.Println("Query executed successfully with no results (e.g., table created).")
 		return 0, 0, 0
 	} else if len(result) > 0 && len(result[0]) >= 3 {
 		intrinsicValRat, ok1 := result[0][0].(*big.Rat)
@@ -304,6 +305,41 @@ func GetStockInfo(ticker, liveStockPrice string) (float64, float64, float64) {
 		fmt.Println("Query returned no data or insufficient columns.")
 		return 0, 0, 0
 	}
+}
+
+func GetAvailableTickers() ([]models.AvailableTicker, error) {
+	utils.LoadEnv()
+	CheckEnvVars()
+	var availableTickers []models.AvailableTicker
+	sqlFile := "backend/sql/get_available_tickers.sql"
+	sqlBytes, err := os.ReadFile(sqlFile)
+	if err != nil {
+		log.Printf("Error reading SQL file: %v\n", err)
+		return availableTickers, err
+	}
+	sql := string(sqlBytes)
+	sql = ReplacePlaceholders(sql)
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	result, err := ExecuteBigQuerySQL(project, sql)
+	if err != nil {
+		log.Printf("Failed to execute query: %v", err)
+		return availableTickers, err
+	}
+	if result == nil {
+		log.Println("Query executed successfully with no results (e.g., table created).")
+		return availableTickers, err
+	}
+	for _, row := range result {
+		if len(row) > 0 {
+			tickerID, ok := row[0].(string)
+			if ok {
+				availableTickers = append(availableTickers, models.AvailableTicker{ID: tickerID})
+			} else {
+				log.Printf("Error converting row value to string: %v\n", row[0])
+			}
+		}
+	}
+	return availableTickers, nil
 }
 
 func PrintQueryResults(sqlFile string, w io.Writer) error {

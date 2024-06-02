@@ -1,0 +1,4 @@
+SELECT DISTINCT ticker, mrkt_cap
+FROM `${DATASET_NAME}.${ML_TABLE_NAME}`
+WHERE date = "2024-01-01"
+ORDER BY mrkt_cap DESC
