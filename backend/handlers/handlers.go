@@ -68,28 +68,16 @@ func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// User Handlers
-// func GetUsers(w http.ResponseWriter, r *http.Request) {
-//     users := []string{"user1", "user2"}
-//     json.NewEncoder(w).Encode(users)
-// }
-
-// func GetUser(w http.ResponseWriter, r *http.Request) {
-//     vars := mux.Vars(r)
-//     id := vars["id"]
-//     user := map[string]string{"id": id, "name": "John Doe"}
-//     json.NewEncoder(w).Encode(user)
-// }
-
-// // Product Handlers
-// func GetProducts(w http.ResponseWriter, r *http.Request) {
-//     products := []string{"product1", "product2"}
-//     json.NewEncoder(w).Encode(products)
-// }
-
-// func GetProduct(w http.ResponseWriter, r *http.Request) {
-//     vars := mux.Vars(r)
-//     id := vars["id"]
-//     product := map[string]string{"id": id, "name": "Product A"}
-//     json.NewEncoder(w).Encode(product)
-// }
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	var tmpl = template.Must(template.ParseFiles("frontend/templates/index.html"))
+	var tickers = []models.AvailableTicker{
+		{"AAPL"},
+		{"GOOGL"},
+		{"AMZN"},
+		// Add more tickers here
+	}
+	err := tmpl.Execute(w, tickers)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}

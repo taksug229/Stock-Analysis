@@ -19,6 +19,7 @@ func NewRouter() {
 	r.Use(utils.LoggingMiddleware)
 	r.Use(utils.AuthMiddleware)
 
+	r.HandleFunc("/", handlers.IndexHandler).Methods("GET")
 	r.HandleFunc("/goodstocks", handlers.GetGoodStocksHandler).Methods("GET")
 	r.HandleFunc("/ticker/{id:[a-zA-Z]+}", handlers.GetLiveStockData).Methods("GET")
 	// r.HandleFunc("/users", handlers.GetUsers).Methods("GET")
