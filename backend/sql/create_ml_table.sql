@@ -122,11 +122,11 @@ WITH tfcf AS
         ON a.ticker = g.ticker AND a.yr = g.yr - 1
     )
     WHERE cagr_yrs IS NOT NULL
-), volumes AS
+), ly AS
 (
     SELECT  ticker,
-            EXTRACT( YEAR
-    FROM datetime ) + 1 AS yr, SUM(volume) AS volume
+            EXTRACT(YEAR
+    FROM datetime) + 1 AS yr, MAX(high) AS 52w_high, MIN(low) AS 52w_low, SUM(volume) AS volume
     FROM `${DATASET_NAME}.${STOCK_TABLE_NAME}_monthly`
     WHERE datetime BETWEEN "2009-01-01" AND "2023-12-01"
     GROUP BY  ticker,
@@ -147,13 +147,15 @@ WITH tfcf AS
             s.stockprice_last_yr,
             s.stockprice_current,
             s.stock_cagr,
-            CAST(v.volume AS INT64)                                                     AS volume_last_yr,
+            ly.52w_high,
+            ly.52w_low,
+            CAST(ly.volume AS INT64)                                                    AS volume_last_yr,
             s.stockprice_future_1yr
     FROM spf AS s
     INNER JOIN ca AS c
     ON s.ticker = c.ticker AND s.yr = c.cy
-    LEFT JOIN volumes AS v
-    ON s.ticker = v.ticker AND s.yr = v.yr
+    LEFT JOIN ly
+    ON s.ticker = ly.ticker AND s.yr = ly.yr
 )
 SELECT  date,
         ticker,
@@ -164,12 +166,14 @@ SELECT  date,
         revenue_cagr,
         fcf_cagr,
         assets_cagr,
-        CAST(CASE WHEN intrinsic_val > 0 THEN intrinsic_val ELSE 0 END                        AS BIGNUMERIC)AS intrinsic_val,
+        LEAST(CAST(CASE WHEN intrinsic_val > 0 THEN intrinsic_val ELSE 0 END AS BIGNUMERIC),10_000_000_000_000) AS intrinsic_val,
         mrkt_cap,
-        LEAST(ROUND(CASE WHEN intrinsic_val > 0 THEN mrkt_cap/intrinsic_val ELSE 0 END,4),10) AS mrkt_intrinsic_ratio,
+        LEAST(ROUND(CASE WHEN intrinsic_val > 0 THEN mrkt_cap/intrinsic_val ELSE 0 END,4),10)                   AS mrkt_intrinsic_ratio,
         stockprice_last_yr,
         stockprice_current,
         stock_cagr,
+        52w_high,
+        52w_low,
         volume_last_yr,
         stockprice_future_1yr
 FROM con

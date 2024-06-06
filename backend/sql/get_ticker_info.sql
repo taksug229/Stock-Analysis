@@ -18,6 +18,8 @@ FROM ML.PREDICT
             a.stockprice_last_yr,
             ${LIVE_STOCK_PRICE} AS stockprice_current,
             a.stock_cagr,
+            a.52w_high,
+            a.52w_low,
             a.volume_last_yr
     FROM
     (
