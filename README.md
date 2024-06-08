@@ -12,7 +12,7 @@ Photo by <a href="https://unsplash.com/@polarmermaid?utm_content=creditCopyText&
     - Cloud Storage
 
 ## Technologies Used
-- Docker, Golang, BigQuery
+- Docker, Golang, GCP (BigQuery, Cloud Engine, Cloud Storage), Prometheus, Grafana
 
 ## Table of Contents
 
