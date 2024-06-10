@@ -31,8 +31,8 @@ FROM terminal_value) + assets, 0))
 FROM discounted ) );
 
 DROP TABLE IF EXISTS `${DATASET_NAME}.${ML_TABLE_NAME}`;
-CREATE TABLE IF NOT EXISTS `${DATASET_NAME}.${ML_TABLE_NAME}` ( date date, ticker STRING, revenue INT64, fcf INT64, assets INT64, cagr_yrs INT64, revenue_cagr FLOAT64, fcf_cagr FLOAT64, assets_cagr FLOAT64, intrinsic_val BIGNUMERIC, mrkt_cap INT64, mrkt_intrinsic_ratio FLOAT64, stockprice_last_yr FLOAT64, stockprice_current FLOAT64, stock_cagr FLOAT64, volume_last_yr INT64, stockprice_future_1yr FLOAT64 );
-INSERT INTO `${DATASET_NAME}.${ML_TABLE_NAME}` (date, ticker, revenue, fcf, assets, cagr_yrs, revenue_cagr, fcf_cagr, assets_cagr, intrinsic_val, mrkt_cap, mrkt_intrinsic_ratio, stockprice_last_yr, stockprice_current, stock_cagr, volume_last_yr, stockprice_future_1yr)
+CREATE TABLE IF NOT EXISTS `${DATASET_NAME}.${ML_TABLE_NAME}` ( date date, ticker STRING, revenue INT64, fcf INT64, assets INT64, cagr_yrs INT64, revenue_cagr FLOAT64, fcf_cagr FLOAT64, assets_cagr FLOAT64, intrinsic_val BIGNUMERIC, mrkt_cap INT64, mrkt_intrinsic_ratio FLOAT64, stockprice_last_yr FLOAT64, stockprice_current FLOAT64, stock_cagr FLOAT64, high_last_yr FLOAT64, low_last_yr FLOAT64, volume_last_yr INT64, stockprice_future_1yr FLOAT64 );
+INSERT INTO `${DATASET_NAME}.${ML_TABLE_NAME}` (date, ticker, revenue, fcf, assets, cagr_yrs, revenue_cagr, fcf_cagr, assets_cagr, intrinsic_val, mrkt_cap, mrkt_intrinsic_ratio, stockprice_last_yr, stockprice_current, stock_cagr, high_last_yr, low_last_yr, volume_last_yr, stockprice_future_1yr)
 WITH tfcf AS
 (
     SELECT  cy + 1                AS cy,
@@ -126,7 +126,7 @@ WITH tfcf AS
 (
     SELECT  ticker,
             EXTRACT(YEAR
-    FROM datetime) + 1 AS yr, MAX(high) AS 52w_high, MIN(low) AS 52w_low, SUM(volume) AS volume
+    FROM datetime) + 1 AS yr, MAX(high) AS high_last_yr, MIN(low) AS low_last_yr, SUM(volume) AS volume
     FROM `${DATASET_NAME}.${STOCK_TABLE_NAME}_monthly`
     WHERE datetime BETWEEN "2009-01-01" AND "2023-12-01"
     GROUP BY  ticker,
@@ -147,8 +147,8 @@ WITH tfcf AS
             s.stockprice_last_yr,
             s.stockprice_current,
             s.stock_cagr,
-            ly.52w_high,
-            ly.52w_low,
+            ly.high_last_yr,
+            ly.low_last_yr,
             CAST(ly.volume AS INT64)                                                    AS volume_last_yr,
             s.stockprice_future_1yr
     FROM spf AS s
@@ -166,14 +166,14 @@ SELECT  date,
         revenue_cagr,
         fcf_cagr,
         assets_cagr,
-        LEAST(CAST(CASE WHEN intrinsic_val > 0 THEN intrinsic_val ELSE 0 END AS BIGNUMERIC),10_000_000_000_000) AS intrinsic_val,
+        LEAST(CAST(CASE WHEN intrinsic_val > 0 THEN intrinsic_val ELSE 0 END AS BIGNUMERIC),10000000000000) AS intrinsic_val,
         mrkt_cap,
         LEAST(ROUND(CASE WHEN intrinsic_val > 0 THEN mrkt_cap/intrinsic_val ELSE 0 END,4),10)                   AS mrkt_intrinsic_ratio,
         stockprice_last_yr,
         stockprice_current,
         stock_cagr,
-        52w_high,
-        52w_low,
+        high_last_yr,
+        low_last_yr,
         volume_last_yr,
         stockprice_future_1yr
 FROM con
