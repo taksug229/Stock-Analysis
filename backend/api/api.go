@@ -436,3 +436,24 @@ func SaveQuoteFromYahoo(uniqueTickers map[string]struct{}) {
 		log.Println("Saved stock data:", saveFileNameStock)
 	}
 }
+
+func GetLatestStockPrice(ticker string) float64 {
+	const layout = "2006-01-02"
+	today := time.Now()
+	for {
+		yesterday := today.Add(-24 * time.Hour)
+		todayFormatted := today.Format(layout)
+		yesterdayFormatted := yesterday.Format(layout)
+
+		q, err := GetQuoteFromYahoo(ticker, yesterdayFormatted, todayFormatted, "daily")
+		if err != nil {
+			log.Println("Error fetching stock data:", err)
+			continue
+		}
+
+		if len(q.Close) > 0 {
+			return q.Close[0]
+		}
+		today = yesterday
+	}
+}

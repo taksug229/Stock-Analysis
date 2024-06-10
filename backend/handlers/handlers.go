@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"time"
 
 	"main/backend/api"
 	"main/backend/gcp"
@@ -36,13 +35,7 @@ func GetGoodStocksHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetLiveStockData(w http.ResponseWriter, r *http.Request) {
 	ticker := mux.Vars(r)["id"]
-	today := time.Now()
-	yesterday := today.Add(-24 * time.Hour)
-	todayFormatted := today.Format("2006-01-02")
-	yesterdayFormatted := yesterday.Format("2006-01-02")
-
-	q, _ := api.GetQuoteFromYahoo(ticker, yesterdayFormatted, todayFormatted, "daily")
-	stockprice := q.Close[0]
+	stockprice := api.GetLatestStockPrice(ticker)
 	stockpricerounded := fmt.Sprintf("%.2f", stockprice)
 	intrinsicval, marketcap, predictedStockPrice := gcp.GetStockInfo(ticker, stockpricerounded)
 
