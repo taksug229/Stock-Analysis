@@ -1,6 +1,6 @@
 FROM golang:1.22-alpine
 WORKDIR /app
-COPY go.mod go.sum .env prometheus.yml ./
+COPY go.mod go.sum .env ./
 COPY backend ./backend
 COPY frontend ./frontend
 COPY cmd ./cmd
