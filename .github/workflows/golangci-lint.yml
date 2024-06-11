@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
     - name: Checkout code
@@ -24,4 +25,4 @@ jobs:
       run: find . -name '*.go' -print
 
     - name: Run GolangCI-Lint
-      run: golangci-lint run ./...
+      run: golangci-lint run ./... --timeout=10m --verbose --concurrency=2
