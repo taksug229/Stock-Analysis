@@ -439,7 +439,11 @@ func SaveQuoteFromYahoo(uniqueTickers map[string]struct{}) {
 
 func GetLatestStockPrice(ticker string) float64 {
 	const layout = "2006-01-02"
-	today := time.Now()
+	est, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		panic(err)
+	}
+	today := time.Now().In(est)
 	for {
 		yesterday := today.Add(-24 * time.Hour)
 		todayFormatted := today.Format(layout)

@@ -17,6 +17,7 @@ Photo by <a href="https://unsplash.com/@polarmermaid?utm_content=creditCopyText&
 ## Table of Contents
 
 1. [Introduction](#introduction)
+    - [Instrinsic Value Calculation](#intrinsic-value-calculation)
 2. [Implementation](#implementation)
 3. [Setup](#setup)
     - [GCP Configuration](#gcp-configuration)
@@ -30,6 +31,33 @@ Photo by <a href="https://unsplash.com/@polarmermaid?utm_content=creditCopyText&
 This project focuses on predicting the future stock price over a one-year period, utilizing fundamental analysis to provide long-term investment insights. By leveraging free resources such as the SEC API and Yahoo Finance, this project eliminates the need for any sign-ups for data collection, ensuring a seamless experience. The project is built on Google Cloud Platform (GCP), utilizing BigQuery, Cloud Engine, and Cloud Storage. The prediction model is built with BigQuery's AutoML. There is an MVP frontend where users can select a stock ticker to view buy recommendations based on the model's predictions. Additionally, the frontend comes with monitoring with Prometheus and Grafana.
 
 **DISCLAIMER:** The information contained on this project is not intended as, and shall not be understood or construed as, financial advice.
+
+### Instrinsinc Value Calculation
+Intrinsic value is used for the feautures of the prediction model. The calculation is based on discounted cashflow analysis.
+
+As an example, let's say a business had $1,000 in free cash flow with a 10-year compound annual growth rate of 10% and currently holds $5,000 worth of cash. If we discount future cash flow by 15% annually, the instrinsic value of the company would be $19,306 as shown in the table below.
+
+| 10% Annual Growth | FCF (Estimated) | Discounted (15%) |
+|-------------------|-----------------|------------------|
+| Current Year      | $1,000          | NA               |
+| Year 1            | $1,100          | $957             |
+| Year 2            | $1,210          | $915             |
+| Year 3            | $1,331          | $875             |
+| Year 4            | $1,464          | $837             |
+| Year 5            | $1,611          | $801             |
+| Year 6            | $1,772          | $766             |
+| Year 7            | $1,949          | $733             |
+| Year 8            | $2,144          | $701             |
+| Year 9            | $2,358          | $670             |
+| Year 10           | $2,594          | $641             |
+| Terminal Value    | $25,937         | $6,411           |
+|                   |                 |                  |
+| **Intrinsic Value**   |                 | **$14,306**          |
+| **Cash**              |                 | **$5,000**           |
+| **Intrinsic Value (Cash Added)** |      | **$19,306**          |
+
+For more details, you can watch the explanation from [New Money's Youtube video](https://youtu.be/Shuu4f_5YMY?si=F_xkrzx4bV4bI5iM).
+
 
 ## Implementation
 The Design diagram for this project is shown below. There are 4 main elements to it.
@@ -122,8 +150,6 @@ Once the [commands](#how-to-run) are run successfully, you can acccess the follo
 
 - **<external_ip>:8080/ticker/<ticker>**
     - Once you click a ticker from the main page, it will show the purchase recommendation based on future stock price prediction and the intrinsic value.
-
-TODO Complete imgs
 
 ![Ticker Page](img/ticker-page.png)
 
