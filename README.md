@@ -32,7 +32,7 @@ This project focuses on predicting the future stock price over a one-year period
 
 **DISCLAIMER:** The information contained on this project is not intended as, and shall not be understood or construed as, financial advice.
 
-### intrinsic Value Calculation
+### Intrinsic Value Calculation
 Intrinsic value is used for the feautures of the prediction model. The calculation is based on discounted cashflow analysis.
 
 As an example, let's say a business had $1,000 in free cash flow with a 10-year compound annual growth rate of 10% and currently holds $5,000 worth of cash. If we discount future cash flow by 15% annually, the instrinsic value of the company would be $19,306 as shown in the table below.
@@ -156,9 +156,12 @@ Once the [commands](#how-to-run) are run successfully, you can acccess the follo
 - **<external_ip>:9090/**
     - [Prometheus](https://prometheus.io/docs/introduction/overview/) page for monitoring.
 
+![Prometheus Page](img/prometheus-page.png)
 
 - **<external_ip>:3000/**
     - [Grafana](https://grafana.com/docs/grafana/latest/) page for visualization of Prometheus.
+
+![Grafana Page](img/grafana-page.png)
 
 ## Conclusion and future works
 This application offers valuable advantages through its use of free APIs and flexible design. Users can adjust parameters like the number of companies and the time frame for data retrieval using a configuration file (.env). This ensures the application can cater to various user needs. There's also monitoring features embedded utilizing Prometheus and Grafana.
