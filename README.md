@@ -28,14 +28,14 @@ Photo by <a href="https://unsplash.com/@polarmermaid?utm_content=creditCopyText&
 - [Built with](#built-with)
 - [Author](#author)
 ## Introduction
-This project focuses on predicting the future stock price over a one-year period, utilizing fundamental analysis to provide long-term investment insights. By leveraging free resources such as the SEC API and Yahoo Finance, this project eliminates the need for any sign-ups for data collection, ensuring a seamless experience. The project is built on Google Cloud Platform (GCP), utilizing BigQuery, Cloud Engine, and Cloud Storage. The prediction model is built with BigQuery's AutoML. There is an MVP frontend where users can select a stock ticker to view buy recommendations based on the model's predictions. Additionally, the frontend comes with monitoring with Prometheus and Grafana.
+This project focuses on predicting the future stock price over a one-year period, utilizing fundamental analysis to provide long-term investment insights. By leveraging free resources such as the SEC API and Yahoo Finance, this project eliminates the need for any sign-ups for data collection, ensuring a seamless experience. The project is built on Google Cloud Platform (GCP), utilizing BigQuery, Cloud Engine, and Cloud Storage. The prediction model is built with BigQuery's AutoML. There is a minimum viable product (MVP) frontend where users can select a stock ticker to view buy recommendations based on the model's predictions and the instrinsic value. Additionally, the frontend comes with monitoring with Prometheus and Grafana.
 
 **DISCLAIMER:** The information contained on this project is not intended as, and shall not be understood or construed as, financial advice.
 
 ### Intrinsic Value Calculation
-Intrinsic value is used for the feautures of the prediction model. The calculation is based on discounted cashflow analysis.
+Intrinsic value is used for one of the feautures of the prediction model and to determine purchase recommendation of the stock. The calculation is based on discounted cashflow analysis.
 
-As an example, let's say a business had $1,000 in free cash flow with a 10-year compound annual growth rate of 10% and currently holds $5,000 worth of cash. If we discount future cash flow by 15% annually, the instrinsic value of the company would be $19,306 as shown in the table below.
+As an example, let's say a business had $1,000 in free cash flow with a 10-year compound annual growth rate (CAGR) of 10% and currently holds $5,000 worth of cash. If we discount future cash flow by 15% annually, the instrinsic value of the company would be $19,306 as shown in the table below.
 
 | 10% Annual Growth | FCF (Estimated) | Discounted (15%) |
 |-------------------|-----------------|------------------|
@@ -76,13 +76,13 @@ You must create a GCP project, enable billing, and allow API access for BigQuery
 - [Create projects in GCP](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 - [How to allow API access](https://youtu.be/cTI7BFVoIwA?si=f0GXlwwx0gormFvP)
 
-For the Cloud Storage VM instance, you must conduct the following:
+For the Cloud Engine VM instance, you must conduct the following:
 - Allow http/https access for the instance.
 - Open ports `8080`, `3000`, `9090` for the instance.
     -  [How to Open Port Tutorial](https://youtu.be/-RjDWwTZUnc?si=5pYQO7MD_zvjmOJo)
 - Allow API BigQuery Admin and Storage Admin for the VM instance.
 
-The VM instance machine type can be minimal (e2-micro, etc.) to run.
+The VM instance machine type can be minimal (e2-micro, etc.) to run with the current default settings.
 
 ### Local Configuration
 The basic configuration file for this repository is [`.env`](.env). Set the following configurations accordingly.
