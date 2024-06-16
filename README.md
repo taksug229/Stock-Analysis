@@ -17,6 +17,8 @@ Photo by <a href="https://unsplash.com/@polarmermaid?utm_content=creditCopyText&
 ## Table of Contents
 
 1. [Introduction](#introduction)
+    - [Overview](#overview)
+    - [Demo video](#demo-video)
     - [Instrinsic Value Calculation](#intrinsic-value-calculation)
 2. [Implementation](#implementation)
 3. [Setup](#setup)
@@ -27,10 +29,16 @@ Photo by <a href="https://unsplash.com/@polarmermaid?utm_content=creditCopyText&
 6. [Conclusion and future works](#conclusion-and-future-works)
 - [Built with](#built-with)
 - [Author](#author)
+
 ## Introduction
+
+### Overview
 This project focuses on predicting the future stock price over a one-year period, utilizing fundamental analysis to provide long-term investment insights. By leveraging free resources such as the SEC API and Yahoo Finance, this project eliminates the need for any sign-ups for data collection, ensuring a seamless experience. The project is built on Google Cloud Platform (GCP), utilizing BigQuery, Cloud Engine, and Cloud Storage. The prediction model is built with BigQuery's AutoML. There is a minimum viable product (MVP) frontend where users can select a stock ticker to view buy recommendations based on the model's predictions and the instrinsic value. Additionally, the frontend comes with monitoring with Prometheus and Grafana.
 
 **DISCLAIMER:** The information contained on this project is not intended as, and shall not be understood or construed as, financial advice.
+
+### Demo Video
+The demo for this app can be viewed [here](https://youtu.be/xmMcGRejOB4).
 
 ### Intrinsic Value Calculation
 Intrinsic value is used for one of the feautures of the prediction model and to determine purchase recommendation of the stock. The calculation is based on discounted cashflow analysis.
